@@ -8,32 +8,38 @@ import (
 	"github.com/kentik/community_sdk_golang/apiv6/kentikapi"
 )
 
+const (
+	apiURLKey = "apiurl"
+	emailKey  = "email"
+	tokenKey  = "token"
+)
+
 func init() {
-	// Set descriptions to support markdown syntax, this will be used in document generation and the language server.
+	// Set descriptions to support Markdown syntax, this will be used in document generation and the language server.
 	schema.DescriptionKind = schema.StringMarkdown
 }
 
 func New() *schema.Provider {
-	p := &schema.Provider{
+	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"apiurl": &schema.Schema{
+			apiURLKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("KTAPI_URL", nil),
-				Description: "Custom apiserver url can be specified either by apiurl attribute or KTAPI_URL environment variable. If not specified, default of <https://cloudexports.api.kentik.com> will be used",
+				Description: "CloudExport API server URL (optional). Can also be specified with KTAPI_URL environment variable.",
 			},
-			"email": &schema.Schema{
+			emailKey: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("KTAPI_AUTH_EMAIL", nil),
-				Description: "Authorization. Either email attribute or KTAPI_AUTH_EMAIL environment variable is required",
+				Description: "Authorization email (required). Can also be specified with KTAPI_AUTH_EMAIL environment variable.",
 			},
-			"token": &schema.Schema{
+			tokenKey: {
 				Type:        schema.TypeString,
 				Sensitive:   true,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("KTAPI_AUTH_TOKEN", nil),
-				Description: "Authorization. Either token attribute or KTAPI_AUTH_TOKEN  environment variable is required",
+				Description: "Authorization token (required). Can also be specified with KTAPI_AUTH_TOKEN environment variable.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -43,29 +49,34 @@ func New() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"kentik-cloudexport_item": resourceCloudExport(),
 		},
+		ConfigureContextFunc: configure,
 	}
-
-	p.ConfigureContextFunc = configure
-
-	return p
 }
 
-func configure(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	email := d.Get("email").(string)
-	token := d.Get("token").(string)
-	apiurl, apiurlOK := d.GetOk("apiurl")
-
-	if !apiurlOK {
-		return newClient(email, token, ""), nil
+func configure(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	// TODO: comment why required here
+	authEmail, ok := d.GetOk(emailKey)
+	if !ok {
+		return nil, diag.Errorf("Missing required %v argument", emailKey)
 	}
-	return newClient(email, token, apiurl.(string)), nil
+
+	authToken := d.Get(tokenKey)
+	if !ok {
+		return nil, diag.Errorf("Missing required %v argument", tokenKey)
+	}
+
+	return kentikapi.NewClient(kentikapi.Config{
+		CloudExportAPIURL: getURL(d),
+		AuthEmail:         authEmail.(string),
+		AuthToken:         authToken.(string),
+	}), nil
 }
 
-func newClient(email, token, url string) *kentikapi.Client {
-	cfg := kentikapi.Config{
-		AuthEmail:         email,
-		AuthToken:         token,
-		CloudExportAPIURL: url,
+func getURL(d *schema.ResourceData) string {
+	var url string
+	apiURL, ok := d.GetOk(apiURLKey)
+	if ok {
+		url = apiURL.(string)
 	}
-	return kentikapi.NewClient(cfg)
+	return url
 }
