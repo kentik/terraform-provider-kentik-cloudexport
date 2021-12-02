@@ -2,42 +2,43 @@ HOSTNAME = kentik
 NAMESPACE = automation
 NAME = kentik-cloudexport
 BINARY = terraform-provider-${NAME}
-VERSION := $(shell echo `git tag --list 'v*' | tail -1 | cut -d v -f 2`)
+VERSION := $(shell echo `git tag --list 'v*' | tail -1 | cut -d v -f 2` | sed -e 's/^$$/0.1.0/')
 OS_ARCH := $(shell printf "%s_%s" `go env GOHOSTOS` `go env GOHOSTARCH`)
-
-# apiserver address for the provider under test to talk to (for testing purposes)
-APISERVER_ADDR=localhost:9955
-
+TEST_API_SERVER_ENDPOINT=localhost:9955
 
 default: install
 
 build:
 	go build -o ${BINARY}
 
+check-docs:
+	./tools/check_docs.sh
+
+docs:
+	go generate
+
+fmt:
+	./tools/fmt.sh
+
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
+lint:
+	golangci-lint run
+
 test:
-	# build localhost_apiserver for the provider under test to talk to
-	go build github.com/kentik/community_sdk_golang/apiv6/localhost_apiserver
-
-	# run localhost_apiserver; serve predefined data from json file
-	./localhost_apiserver -addr ${APISERVER_ADDR} -cloudexport internal/provider/CloudExportTestData.json &
-
-	# give the server some warm up time
-	sleep 1 
+	TEST_API_SERVER_ENDPOINT=${TEST_API_SERVER_ENDPOINT} ./tools/start_test_api_server.sh
 
 	# run tests:
-	# - set KTAPI_URL to our localhost_apiserver url - otherwise the provider will try to connect to live kentik server
-	# - set KTAPI_AUTH_EMAIL and KTAPI_AUTH_TOKEN to dummy values - they are required by provider, but not actually used by localhost_apiserver
-	# - set no test caching (-count=1) - beside the provider itself, the tests also depend on the used localhost_apiserver and test data
-	KTAPI_URL="http://${APISERVER_ADDR}" KTAPI_AUTH_EMAIL="dummy@acme.com" KTAPI_AUTH_TOKEN="dummy" \
-		go test ./... $(TESTARGS) -run="." -timeout=5m -count=1 || (pkill -f localhost_apiserver && exit 1) # stop server on error
+	# - set KTAPI_URL to our test API server URL - otherwise the provider will try to connect to live Kentik server
+	# - set KTAPI_AUTH_EMAIL and KTAPI_AUTH_TOKEN to dummy values - they are required by provider,
+	#   but not actually used by test API server
+	# - set no test caching (-count=1) - beside the provider itself, the tests also depend on the
+	#   test API server and test data
+	KTAPI_URL="http://${TEST_API_SERVER_ENDPOINT}" KTAPI_AUTH_EMAIL="dummy@acme.com" KTAPI_AUTH_TOKEN="dummy" \
+		go test ./... $(TESTARGS) -timeout=5m -count=1 || (./tools/stop_test_api_server.sh && exit 1)
 
-	# finally, stop the server
-	pkill -f localhost_apiserver
+	 ./tools/stop_test_api_server.sh
 
-testacc:
-	echo "Currently no acceptance tests that run against live apiserver are available. You can run tests against local apiserver with: make test"
-	# TF_ACC=1 go test ./... $(TESTARGS) -run "." -timeout 5m
+.PHONY: build check-docs docs fmt install lint test

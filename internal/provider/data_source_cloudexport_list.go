@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/kentik/community_sdk_golang/apiv6/kentikapi"
+	"github.com/kentik/community_sdk_golang/kentikapi"
 )
 
 func dataSourceCloudExportList() *schema.Resource {
@@ -31,7 +31,7 @@ func dataSourceCloudExportListRead(ctx context.Context, d *schema.ResourceData, 
 		ExportList(ctx).
 		Execute()
 	if err != nil {
-		return detailedDiagError("Failed to read cloud export list", err, httpResp)
+		return detailedDiagError("failed to read cloud export list", err, httpResp)
 	}
 
 	if listResp.Exports != nil {

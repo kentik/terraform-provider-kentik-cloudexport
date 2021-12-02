@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/kentik/community_sdk_golang/apiv6/kentikapi"
+	"github.com/kentik/community_sdk_golang/kentikapi"
 )
 
 func dataSourceCloudExportItem() *schema.Resource {
@@ -21,7 +21,7 @@ func dataSourceCloudExportItemRead(ctx context.Context, d *schema.ResourceData, 
 		ExportGet(ctx, d.Get("id").(string)).
 		Execute()
 	if err != nil {
-		return detailedDiagError("Failed to read cloud export item", err, httpResp)
+		return detailedDiagError("failed to read cloud export item", err, httpResp)
 	}
 
 	mapExport := cloudExportToMap(getResp.Export)

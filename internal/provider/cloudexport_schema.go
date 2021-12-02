@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/kentik/community_sdk_golang/apiv6/kentikapi/cloudexport"
+	"github.com/kentik/community_sdk_golang/kentikapi/cloudexport"
 )
 
 // CloudExportSchema reflects V202101beta1CloudExport type and defines a CloudExport item used in terraform .tf files

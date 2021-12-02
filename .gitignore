@@ -1,8 +1,9 @@
 *.backup
+*.log
 .terraform.lock.hcl
 .terraform/
 bin/
-localhost_apiserver
 terraform-provider-kentik-cloudexport
 terraform.tfplan
 terraform.tfstate
+test-api-server
