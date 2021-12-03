@@ -21,7 +21,7 @@ func dataSourceCloudExportItemRead(ctx context.Context, d *schema.ResourceData, 
 		ExportGet(ctx, d.Get("id").(string)).
 		Execute()
 	if err != nil {
-		return detailedDiagError("failed to read cloud export item", err, httpResp)
+		return detailedDiagError("Failed to read cloud export item", err, httpResp)
 	}
 
 	mapExport := cloudExportToMap(getResp.Export)

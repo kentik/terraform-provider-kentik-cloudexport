@@ -53,9 +53,9 @@ c
 
 ## Release
 
-Release process for the provider is based on Git repository tags that follow [semantic versioning](https://semver.org/). Every tag with format v[0-9].[0-9].[0-9] will trigger automatic build of package and publish it in [Terraform registry](https://registry.terraform.io/providers/kentik/kentik-cloudexport).
+Release process for the provider is based on Git repository tags that follow [semantic versioning](https://semver.org/). Every tag with format _v\[0-9].\[0-9].\[0-9]_ will trigger automatic build of package and publish it in [Terraform registry](https://registry.terraform.io/providers/kentik/kentik-cloudexport).
 
 To release the provider:
 1. Make sure that all code that you want to release is in _master_ branch.
-2. Navigate to [repository releases page](https://github.com/kentik/terraform-provider-kentik-cloudexport/releases), click _Draft a new release_ button and put tag version (in _v[0-9].[0-9].[0-9]_ format), name and description.
+2. Navigate to [repository releases page](https://github.com/kentik/terraform-provider-kentik-cloudexport/releases), click _Draft a new release_ button and put tag version (in _v\[0-9].\[0-9].\[0-9]_ format), name and description.
 3. Go to [GitHub Actions](https://github.com/kentik/terraform-provider-kentik-cloudexport/actions) to observe the release job.

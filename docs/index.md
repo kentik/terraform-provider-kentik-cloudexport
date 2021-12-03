@@ -1,17 +1,17 @@
 ---
 layout: ""
-page_title: "Provider: Kentik CloudExport"
+page_title: "Provider: Kentik Cloud Export"
 description: |-
-  The Kentik CloudExport provider provides resources to interact with Kentik CloudExport API.
+  The Kentik Cloud Export provider is used to work with Kentik Cloud Exports, which allow to import flow logs and meta-data from services deployed in public clouds.
 ---
 
-# Kentik CloudExport Provider
+# Kentik Cloud Export provider
 
-The Kentik CloudExport provider provides resources to interact with Kentik CloudExport API.
+The Kentik Cloud Export provider is used to work with Kentik Cloud Exports, which allow to import flow logs and meta-data from services deployed in public clouds.
 
 ## Example usage
 
-Go to folder with Terraform `.tf` definition files for CloudExport resources/data sources ([./examples/**](./examples)):
+Go to folder with Terraform `.tf` definition files for Cloud Export resources/data sources ([./examples/**](./examples)):
 
 1. Configure provider with parameters:
 
@@ -54,7 +54,7 @@ terraform destroy
 
 ### Optional
 
-- **apiurl** (String) CloudExport API server URL (optional). Can also be specified with KTAPI_URL environment variable.
+- **apiurl** (String) Cloud Export API server URL (optional). Can also be specified with KTAPI_URL environment variable.
 - **log_payloads** (Boolean) Log payloads flag enables verbose debug logs of requests and responses (optional). Can also be specified with KTAPI_LOG_PAYLOADS environment variable.
 - **retry** (Block List, Max: 1) Configuration for API client retry mechanism (see [below for nested schema](#nestedblock--retry))
 

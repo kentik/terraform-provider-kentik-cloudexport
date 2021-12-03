@@ -31,7 +31,7 @@ func dataSourceCloudExportListRead(ctx context.Context, d *schema.ResourceData, 
 		ExportList(ctx).
 		Execute()
 	if err != nil {
-		return detailedDiagError("failed to read cloud export list", err, httpResp)
+		return detailedDiagError("Failed to read cloud export list", err, httpResp)
 	}
 
 	if listResp.Exports != nil {

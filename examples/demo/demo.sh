@@ -4,6 +4,8 @@
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 REPO_DIR=$(cd -- "$SCRIPT_DIR" && cd ../../ && pwd)
 
+source "$REPO_DIR/tools/utility_functions.sh" || exit 1
+
 run() {
     pushd "$SCRIPT_DIR" > /dev/null || die
 
@@ -56,23 +58,19 @@ run() {
 
 check_prerequisites() {
     if ! terraform -v > /dev/null 2>&1; then
-        echo "Please install Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli"
-        die
+        die "Please install Terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli"
     fi
 
     if ! pygmentize -V > /dev/null 2>&1; then
-        echo "Please install Pygments: https://pygments.org/"
-        die
+        die "Please install Pygments: https://pygments.org/"
     fi
 
     if ! curl -V > /dev/null 2>&1; then
-        echo "Please install cURL: https://curl.se/"
-        die
+        die "Please install cURL: https://curl.se/"
     fi
 
     if ! jq -V > /dev/null 2>&1; then
-        echo "Please install jq: https://stedolan.github.io/jq/"
-        die
+        die "Please install jq: https://stedolan.github.io/jq/"
     fi
 }
 
@@ -84,13 +82,11 @@ check_env() {
     stage "Check auth env variables"
 
     if [[ -z "$KTAPI_AUTH_EMAIL" ]]; then
-        echo "KTAPI_AUTH_EMAIL env variable must be set to Kentik API account email"
-        die
+        die "KTAPI_AUTH_EMAIL env variable must be set to Kentik API account email"
     fi
 
     if [[ -z "$KTAPI_AUTH_TOKEN" ]]; then
-        echo "KTAPI_AUTH_TOKEN env variable must be set to Kentik API authorization token"
-        die
+        die "KTAPI_AUTH_TOKEN env variable must be set to Kentik API authorization token"
     fi
 
     echo "Print KTAPI_AUTH_EMAIL"
@@ -107,30 +103,6 @@ list_cloud_exports() {
         --header "X-CH-Auth-Email: $KTAPI_AUTH_EMAIL" \
         --header "X-CH-Auth-API-Token: $KTAPI_AUTH_TOKEN" | jq
     pause
-}
-
-stage() {
-    BLUE_BOLD="\e[1m\e[34m"
-    RESET="\e[0m"
-    msg="$1"
-
-    echo
-    echo -e "$BLUE_BOLD$msg$RESET"
-}
-
-pause() {
-    echo
-    read -r -p "Press any key to continue..."
-}
-
-pause_and_run() {
-    read -r -p "Press any key to run '$*'"
-    "$@"
-}
-
-die() {
-    echo "Error. Exit 1"
-    exit 1
 }
 
 run

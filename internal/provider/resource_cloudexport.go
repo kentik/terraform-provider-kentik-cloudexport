@@ -35,7 +35,7 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 		Body(req).
 		Execute()
 	if err != nil {
-		return detailedDiagError("failed to create cloud export", err, httpResp)
+		return detailedDiagError("Failed to create cloud export", err, httpResp)
 	}
 
 	err = d.Set("id", resp.Export.GetId())
@@ -58,7 +58,7 @@ func resourceCloudExportRead(ctx context.Context, d *schema.ResourceData, m inte
 			d.SetId("") // delete the resource in TF state
 			return nil
 		}
-		return detailedDiagError("failed to read cloud export", err, httpResp)
+		return detailedDiagError("Failed to read cloud export", err, httpResp)
 	}
 
 	mapExport := cloudExportToMap(resp.Export)
@@ -87,7 +87,7 @@ func resourceCloudExportUpdate(ctx context.Context, d *schema.ResourceData, m in
 			Body(req).
 			Execute()
 		if err != nil {
-			return detailedDiagError("failed to update cloud export", err, httpResp)
+			return detailedDiagError("Failed to update cloud export", err, httpResp)
 		}
 	}
 
@@ -100,7 +100,7 @@ func resourceCloudExportDelete(ctx context.Context, d *schema.ResourceData, m in
 		ExportDelete(ctx, d.Get("id").(string)).
 		Execute()
 	if err != nil {
-		return detailedDiagError("failed to delete cloud export", err, httpResp)
+		return detailedDiagError("Failed to delete cloud export", err, httpResp)
 	}
 
 	return nil
