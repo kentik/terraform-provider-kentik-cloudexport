@@ -3,12 +3,12 @@
 page_title: "kentik-cloudexport_list Data Source - terraform-provider-kentik-cloudexport"
 subcategory: ""
 description: |-
-  DataSource representing list of cloud exports
+  Data source representing list of cloud exports
 ---
 
 # kentik-cloudexport_list (Data Source)
 
-DataSource representing list of cloud exports
+Data source representing list of cloud exports
 
 ## Example Usage
 

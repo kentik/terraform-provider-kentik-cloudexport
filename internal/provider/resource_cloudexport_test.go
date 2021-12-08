@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-// Note: resource create/update/get/delete requests that result from below tests are processed by localhost_apiserver
+// Note: resource create/update/get/delete requests that result from below tests are processed by test API server
 // (running in background).
 // Note: we only check the user-provided values as we don't control the server-provided ones
 

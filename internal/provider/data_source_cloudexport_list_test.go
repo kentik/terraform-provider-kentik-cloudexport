@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-// Note: values checked in tests below are provided by fake API Server from CloudExportTestData.json
+// Note: values checked in tests below are provided by fake API Server from test-data.json
 // (running in background).
 
 func TestDataSourceCloudExportList(t *testing.T) {

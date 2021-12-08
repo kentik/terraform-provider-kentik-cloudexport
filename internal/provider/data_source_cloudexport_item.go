@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/kentik/community_sdk_golang/apiv6/kentikapi"
+	"github.com/kentik/community_sdk_golang/kentikapi"
 )
 
 func dataSourceCloudExportItem() *schema.Resource {

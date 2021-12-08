@@ -1,105 +1,61 @@
 # Terraform Provider for Kentik Cloud Export
 
-## Release process
-
-Release process for the provider is based on GitHub repository tags. Every tag with format v[0-9].[0-9].[0-9] will trigger automatic build of package and publish it in registry.terraform.io.
-
-To build and release package:
-1. Make sure that all code that you want to release is in master branch
-1. Create tag with format v[0-9].[0-9].[0-9] in GitHub. [Releases](https://github.com/kentik/terraform-provider-kentik-cloudexport/releases) -> Draft a new release -> Put tag version, name and description
-1. Go to [GitHub Actions](https://github.com/kentik/terraform-provider-kentik-cloudexport/actions)
-
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
-- [Go](https://golang.org/doc/install) >= 1.15
+- [Go](https://golang.org/doc/install) >= 1.17
+- [Terraform](https://www.terraform.io/downloads.html) >= 0.15
 
-## Install
+## Usage
 
-Build and install the plugin so that Terraform can find and use it:
+Detailed user documentation for the provider can be found [here](https://registry.terraform.io/providers/kentik/kentik-cloudexport/latest/docs).
 
-```bash
-make install
-```
+## Development
 
-## Test
+Anybody who wants to contribute to development is welcome to provide pull requests. To work on the provider, install tools listed in [requirements section](#requirements).
 
-### Unit tests
+Optional tools:
+- _golangci-lint_: <https://golangci-lint.run/usage/install/#local-installation>
 
-Unit tests run the provider against a localhost API server that serves data read from CloudExportTestData.json.
+Development steps:
+- Build the provider: `make build`
+- Build and install the provider locally: `make install`
+- Run tests: `make test`
+- Run golangci-lint: `make lint`
+- Format the code: `make fmt`
+- Generate the documentation: `make docs`
+- Check if generated documentation is up-to-date: `make check-docs`
+
+### Test
+
+Tests run the provider against a `test-api-server` that serves data read from [test-data.json](internal/provider/test-data.json)
+
 This allows to:
 - avoid the necessity of providing valid API credentials
 - avoid creating resources on remote server
 - make the test results more reliable
 
-```bash
-make test
-```
+Running `make test` will:
+1. Build and run test-api-server which emulates Kentik API v6 by returning static preconfigured responses
+2. Run tests (communication with `test-api-server`)
+3. Shut down `test-api-server`
 
-This will:
-1. build and run localhost API server that is a stub for Kentik API v6 server
-1. run tests (communication with localhost API server)
-1. shut down localhost API server
+### Debug
 
-### Acceptance tests
-
-Acceptance tests run the provider against live server
-
-```bash
-make testacc
-```
-
-You need to provide valid credentials as environment variables so that the provider can communicate with the server:
-- KTAPI_AUTH_EMAIL
-- KTAPI_AUTH_TOKEN
-
-*Note:* Acceptance tests create real resources.
-
-## Debug
+For debugging use [Delve debugger](https://github.com/go-delve/delve)
 
 ```bash
 make build
 dlv exec ./terraform-provider-kentik-cloudexport
 r -debug
 c
-# attach with Terraform following the just-printed out instruction in your terminal
+# attach with terraform following the just-printed out instruction in your terminal
 ```
 
-## Using the provider
+## Release
 
-In folder with Terraform .tf definition file for cloud export resources/data sources:
+Release process for the provider is based on Git repository tags that follow [semantic versioning](https://semver.org/). Every tag with format _v\[0-9].\[0-9].\[0-9]_ will trigger automatic build of package and publish it in [Terraform registry](https://registry.terraform.io/providers/kentik/kentik-cloudexport).
 
-```bash
-terraform init
-terraform apply
-```
-
-Note: you need to provide Kentik API credentials, and also you can provide custom API server URL, either in .tf file:
-
-```terraform
-provider "kentik-cloudexport" {
-  email="john@acme.com"
-  token="token123"
-  # apiurl= "http://localhost:8080" # custom API server
-}
-```
-
-or as environment variables:
-
-```bash
-export KTAPI_AUTH_EMAIL="john@acme.com"
-export KTAPI_AUTH_TOKEN="token123"
-# export KTAPI_URL="http://localhost:8080" # custom API server
-```
-
-See: [examples](./examples)
-
-## Developing the Provider
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
-
-To install the provider, run `make install`. This will place the compiled provider binary under `~/.terraform.d/plugins/`.
-
-In order to run the full suite of tests, run `make test`.
-
-To generate or update documentation, run `go generate`.
+To release the provider:
+1. Make sure that all code that you want to release is in _master_ branch.
+2. Navigate to [repository releases page](https://github.com/kentik/terraform-provider-kentik-cloudexport/releases), click _Draft a new release_ button and put tag version (in _v\[0-9].\[0-9].\[0-9]_ format), name and description.
+3. Go to [GitHub Actions](https://github.com/kentik/terraform-provider-kentik-cloudexport/actions) to observe the release job.

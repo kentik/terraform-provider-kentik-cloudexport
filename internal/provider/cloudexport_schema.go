@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/kentik/community_sdk_golang/apiv6/kentikapi/cloudexport"
+	"github.com/kentik/community_sdk_golang/kentikapi/cloudexport"
 )
 
-// CloudExportSchema reflects V202101beta1CloudExport type and defines a CloudExport item used in terraform .tf files
+// CloudExportSchema reflects V202101beta1CloudExport type and defines a Cloud Export item used in terraform .tf files
 // Note: currently, nesting an object is only possible by using single-item List element (Terraform limitation)
 //nolint: gocognit, gocyclo
 func makeCloudExportSchema(mode schemaMode) map[string]*schema.Schema {

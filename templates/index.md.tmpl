@@ -1,18 +1,47 @@
 ---
 layout: ""
-page_title: "Provider: kentik-cloudexport"
+page_title: "Provider: Kentik Cloud Export"
 description: |-
-  The kentik-cloudexport provider provides resources to interact with Kentik CloudExport API.
+  The Kentik Cloud Export provider is used to work with Kentik Cloud Exports, which allow to import flow logs and meta-data from services deployed in public clouds.
 ---
 
-# kentik-cloudexport provider
+# Kentik Cloud Export provider
 
-The kentik-cloudexport provider provides resources to interact with Kentik CloudExport API.
+The Kentik Cloud Export provider is used to work with Kentik Cloud Exports, which allow to import flow logs and meta-data from services deployed in public clouds.
 
-Interacting with Kentik CloudExport API requires authorization with valid (email, token) pair.
+## Example usage
 
-## Example Usage
+Go to folder with Terraform `.tf` definition files for Cloud Export resources/data sources ([./examples/**](./examples)):
 
-{{tffile "examples/provider/provider.tf"}}
+1. Configure provider with parameters:
+
+```terraform
+provider "kentik-cloudexport" {
+  // Authorization email (required). Can also be specified with KTAPI_AUTH_EMAIL environment variable.
+  email = "john@acme.com"
+  // Authorization token (required). Can also be specified with KTAPI_AUTH_TOKEN environment variable.
+  token = "token"
+}
+```
+
+or environment variables:
+
+```bash
+export KTAPI_AUTH_EMAIL="john@acme.com"
+export KTAPI_AUTH_TOKEN="token"
+```
+
+2. Apply Terraform configuration:
+
+```bash
+terraform init
+terraform apply # creates resources in Kentik platform
+```
+
+3. Clean up resources:
+
+```bash
+terraform destroy
+```
 
 {{ .SchemaMarkdown | trimspace }}

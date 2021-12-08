@@ -3,12 +3,12 @@
 page_title: "kentik-cloudexport_item Data Source - terraform-provider-kentik-cloudexport"
 subcategory: ""
 description: |-
-  DataSource representing single cloud export item
+  Data source representing single cloud export item
 ---
 
 # kentik-cloudexport_item (Data Source)
 
-DataSource representing single cloud export item
+Data source representing single cloud export item
 
 ## Example Usage
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/kentik/community_sdk_golang/apiv6/kentikapi"
+	"github.com/kentik/community_sdk_golang/kentikapi"
 )
 
 const (
@@ -27,7 +27,7 @@ const (
 	defaultMaxDelay    = "5m"
 )
 
-// New returns new CloudExport provider.
+// New returns new Cloud Export provider.
 func New() *schema.Provider {
 	return &schema.Provider{
 		Schema: providerSchema(),
@@ -48,7 +48,7 @@ func providerSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc("KTAPI_URL", nil),
-			Description: "CloudExport API server URL (optional). Can also be specified with KTAPI_URL environment variable.",
+			Description: "Cloud Export API server URL (optional). Can also be specified with KTAPI_URL environment variable.",
 		},
 		emailKey: {
 			Type:        schema.TypeString,
