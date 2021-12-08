@@ -7,7 +7,7 @@
 
 ## Usage
 
-Detailed user documentation for the provider can be found [here](hhttps://registry.terraform.io/providers/kentik/kentik-cloudexport/latest/docs).
+Detailed user documentation for the provider can be found [here](https://registry.terraform.io/providers/kentik/kentik-cloudexport/latest/docs).
 
 ## Development
 
