@@ -168,10 +168,13 @@ func getRetryConfig(d *schema.ResourceData) (kentikapi.RetryConfig, error) {
 		return kentikapi.RetryConfig{}, fmt.Errorf("parse %v duration: %v", maxDelayKey, err)
 	}
 
+	// KentikAPI returns http 500 when creating CloudExport with name that is already taken.
+	// This is non-retryable situation, so exclude http 500 from RetryableStatusCodes
 	return kentikapi.RetryConfig{
-		MaxAttempts: &maxAttempts,
-		MinDelay:    &minDelay,
-		MaxDelay:    &maxDelay,
+		MaxAttempts:          &maxAttempts,
+		MinDelay:             &minDelay,
+		MaxDelay:             &maxDelay,
+		RetryableStatusCodes: []int{429, 502, 503, 504},
 	}, nil
 }
 
