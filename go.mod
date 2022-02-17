@@ -10,6 +10,8 @@ require (
 	mvdan.cc/gofumpt v0.2.1
 )
 
+require github.com/hashicorp/terraform-plugin-log v0.2.0
+
 require (
 	cloud.google.com/go v0.65.0 // indirect
 	cloud.google.com/go/storage v1.10.0 // indirect
@@ -51,7 +53,6 @@ require (
 	github.com/hashicorp/terraform-exec v0.15.0 // indirect
 	github.com/hashicorp/terraform-json v0.13.0 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.5.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.2.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.0.0-20210412075316-9b2996cce896 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
