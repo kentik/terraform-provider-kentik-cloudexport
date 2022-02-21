@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kentik/community_sdk_golang/kentikapi"
@@ -29,11 +32,16 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	req := *cloudexport.NewV202101beta1CreateCloudExportRequest()
 	req.Export = export
-
+	jsonReq, err := json.Marshal(*export)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	tflog.Debug(ctx, fmt.Sprintf("Kentik API request - create:\n%s\n", jsonReq))
 	resp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 		ExportCreate(ctx).
 		Body(req).
 		Execute()
+	tflog.Debug(ctx, fmt.Sprintf("Kentik API response - create:\n%s\n", httpResp.Body))
 	if err != nil {
 		return detailedDiagError("Failed to create cloud export", err, httpResp)
 	}
@@ -50,9 +58,11 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceCloudExportRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, fmt.Sprintf("Kentik API request - read resource with ID: %s\n", d.Get("id").(string)))
 	resp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 		ExportGet(ctx, d.Get("id").(string)).
 		Execute()
+	tflog.Debug(ctx, fmt.Sprintf("Kentik API response - read:\n%s\n", httpResp.Body))
 	if err != nil {
 		if httpResp.StatusCode == http.StatusNotFound {
 			d.SetId("") // delete the resource in TF state
@@ -60,7 +70,6 @@ func resourceCloudExportRead(ctx context.Context, d *schema.ResourceData, m inte
 		}
 		return detailedDiagError("Failed to read cloud export", err, httpResp)
 	}
-
 	mapExport := cloudExportToMap(resp.Export)
 	for k, v := range mapExport {
 		if err = d.Set(k, v); err != nil {
@@ -81,11 +90,16 @@ func resourceCloudExportUpdate(ctx context.Context, d *schema.ResourceData, m in
 
 		req := *cloudexport.NewV202101beta1UpdateCloudExportRequest()
 		req.Export = export
-
+		jsonReq, err := json.Marshal(*export)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		tflog.Debug(ctx, fmt.Sprintf("Kentik API request - update:\n%s\n", jsonReq))
 		_, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 			ExportUpdate(ctx, d.Get("id").(string)).
 			Body(req).
 			Execute()
+		tflog.Debug(ctx, fmt.Sprintf("Kentik API response - update:\n%s\n", httpResp.Body))
 		if err != nil {
 			return detailedDiagError("Failed to update cloud export", err, httpResp)
 		}
@@ -96,9 +110,11 @@ func resourceCloudExportUpdate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceCloudExportDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	tflog.Debug(ctx, fmt.Sprintf("Kentik API request - delete resource with ID: %s\n", d.Get("id").(string)))
 	_, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 		ExportDelete(ctx, d.Get("id").(string)).
 		Execute()
+	tflog.Debug(ctx, fmt.Sprintf("Kentik API response - delete:\n%s\n", httpResp.Body))
 	if err != nil {
 		return detailedDiagError("Failed to delete cloud export", err, httpResp)
 	}
