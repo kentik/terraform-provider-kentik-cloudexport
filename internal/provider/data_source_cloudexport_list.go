@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -29,11 +28,11 @@ func dataSourceCloudExportList() *schema.Resource {
 }
 
 func dataSourceCloudExportListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	tflog.Debug(ctx, "Kentik API request - read list")
+	tflog.Debug(ctx, "List cloud export Kentik API request")
 	listResp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 		ExportList(ctx).
 		Execute()
-	tflog.Debug(ctx, fmt.Sprintf("Kentik API response - read list:\n%s\n", httpResp.Body))
+	tflog.Debug(ctx, "List cloud export Kentik API response", listResp)
 	if err != nil {
 		return detailedDiagError("Failed to read cloud export list", err, httpResp)
 	}

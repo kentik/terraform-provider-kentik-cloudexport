@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -19,11 +18,11 @@ func dataSourceCloudExportItem() *schema.Resource {
 }
 
 func dataSourceCloudExportItemRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	tflog.Debug(ctx, fmt.Sprintf("Kentik API request - read item with ID: %s\n", d.Get("id").(string)))
+	tflog.Debug(ctx, "Get cloud export Kentik API request", "ID", d.Get("id").(string))
 	getResp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 		ExportGet(ctx, d.Get("id").(string)).
 		Execute()
-	tflog.Debug(ctx, fmt.Sprintf("Kentik API response - read item:\n%s\n", httpResp.Body))
+	tflog.Debug(ctx, "Get cloud export Kentik API response", getResp)
 	if err != nil {
 		return detailedDiagError("Failed to read cloud export item", err, httpResp)
 	}
