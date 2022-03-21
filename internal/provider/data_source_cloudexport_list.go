@@ -32,7 +32,7 @@ func dataSourceCloudExportListRead(ctx context.Context, d *schema.ResourceData, 
 	listResp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
 		ExportList(ctx).
 		Execute()
-	tflog.Debug(ctx, "List cloud export Kentik API response", "response", listResp)
+	tflog.Debug(ctx, "List cloud export Kentik API response", map[string]interface{}{"response": listResp})
 	if err != nil {
 		return detailedDiagError("Failed to read cloud export list", err, httpResp)
 	}
