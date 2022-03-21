@@ -27,43 +27,43 @@ output "export_list" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **items** (List of Object) (see [below for nested schema](#nestedatt--items))
+- `items` (List of Object) (see [below for nested schema](#nestedatt--items))
 
 <a id="nestedatt--items"></a>
 ### Nested Schema for `items`
 
 Read-Only:
 
-- **api_root** (String)
-- **aws** (List of Object) (see [below for nested schema](#nestedobjatt--items--aws))
-- **azure** (List of Object) (see [below for nested schema](#nestedobjatt--items--azure))
-- **bgp** (List of Object) (see [below for nested schema](#nestedobjatt--items--bgp))
-- **cloud_provider** (String)
-- **current_status** (List of Object) (see [below for nested schema](#nestedobjatt--items--current_status))
-- **description** (String)
-- **enabled** (Boolean)
-- **flow_dest** (String)
-- **gce** (List of Object) (see [below for nested schema](#nestedobjatt--items--gce))
-- **ibm** (List of Object) (see [below for nested schema](#nestedobjatt--items--ibm))
-- **id** (String)
-- **name** (String)
-- **plan_id** (String)
-- **type** (String)
+- `api_root` (String)
+- `aws` (List of Object) (see [below for nested schema](#nestedobjatt--items--aws))
+- `azure` (List of Object) (see [below for nested schema](#nestedobjatt--items--azure))
+- `bgp` (List of Object) (see [below for nested schema](#nestedobjatt--items--bgp))
+- `cloud_provider` (String)
+- `current_status` (List of Object) (see [below for nested schema](#nestedobjatt--items--current_status))
+- `description` (String)
+- `enabled` (Boolean)
+- `flow_dest` (String)
+- `gce` (List of Object) (see [below for nested schema](#nestedobjatt--items--gce))
+- `ibm` (List of Object) (see [below for nested schema](#nestedobjatt--items--ibm))
+- `id` (String)
+- `name` (String)
+- `plan_id` (String)
+- `type` (String)
 
 <a id="nestedobjatt--items--aws"></a>
 ### Nested Schema for `items.aws`
 
 Read-Only:
 
-- **bucket** (String)
-- **delete_after_read** (Boolean)
-- **iam_role_arn** (String)
-- **multiple_buckets** (Boolean)
-- **region** (String)
+- `bucket` (String)
+- `delete_after_read` (Boolean)
+- `iam_role_arn` (String)
+- `multiple_buckets` (Boolean)
+- `region` (String)
 
 
 <a id="nestedobjatt--items--azure"></a>
@@ -71,11 +71,11 @@ Read-Only:
 
 Read-Only:
 
-- **location** (String)
-- **resource_group** (String)
-- **security_principal_enabled** (Boolean)
-- **storage_account** (String)
-- **subscription_id** (String)
+- `location` (String)
+- `resource_group` (String)
+- `security_principal_enabled` (Boolean)
+- `storage_account` (String)
+- `subscription_id` (String)
 
 
 <a id="nestedobjatt--items--bgp"></a>
@@ -83,9 +83,9 @@ Read-Only:
 
 Read-Only:
 
-- **apply_bgp** (Boolean)
-- **device_bgp_type** (String)
-- **use_bgp_device_id** (String)
+- `apply_bgp` (Boolean)
+- `device_bgp_type` (String)
+- `use_bgp_device_id` (String)
 
 
 <a id="nestedobjatt--items--current_status"></a>
@@ -93,11 +93,11 @@ Read-Only:
 
 Read-Only:
 
-- **api_access** (Boolean)
-- **error_message** (String)
-- **flow_found** (Boolean)
-- **status** (String)
-- **storage_account_access** (Boolean)
+- `api_access` (Boolean)
+- `error_message` (String)
+- `flow_found` (Boolean)
+- `status` (String)
+- `storage_account_access` (Boolean)
 
 
 <a id="nestedobjatt--items--gce"></a>
@@ -105,8 +105,8 @@ Read-Only:
 
 Read-Only:
 
-- **project** (String)
-- **subscription** (String)
+- `project` (String)
+- `subscription` (String)
 
 
 <a id="nestedobjatt--items--ibm"></a>
@@ -114,6 +114,6 @@ Read-Only:
 
 Read-Only:
 
-- **bucket** (String)
+- `bucket` (String)
 
 
