@@ -4,13 +4,12 @@ go 1.17
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.7.0
+	github.com/hashicorp/terraform-plugin-log v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.12.0
 	github.com/kentik/community_sdk_golang v0.2.1-0.20211123051715-62e10d7f63f0
 	github.com/stretchr/testify v1.7.1
 	mvdan.cc/gofumpt v0.3.1
 )
-
-require github.com/hashicorp/terraform-plugin-log v0.3.0
 
 require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
