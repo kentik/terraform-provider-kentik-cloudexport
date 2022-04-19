@@ -29,18 +29,16 @@ func dataSourceCloudExportList() *schema.Resource {
 
 func dataSourceCloudExportListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "List cloud export Kentik API request")
-	listResp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
-		ExportList(ctx).
-		Execute()
+	listResp, err := m.(*kentikapi.Client).CloudExports.GetAll(ctx)
 	tflog.Debug(ctx, "List cloud export Kentik API response", map[string]interface{}{"response": listResp})
 	if err != nil {
-		return detailedDiagError("Failed to read cloud export list", err, httpResp)
+		return detailedDiagError("Failed to read cloud export list", err)
 	}
 
-	if listResp.Exports != nil {
-		numExports := len(*listResp.Exports)
+	if listResp != nil {
+		numExports := len(listResp.CloudExports)
 		exports := make([]interface{}, numExports)
-		for i, e := range *listResp.Exports {
+		for i, e := range listResp.CloudExports {
 			ee := e // avoid implicit memory aliasing in for loop (G601)
 			exports[i] = cloudExportToMap(&ee)
 		}

@@ -124,18 +124,22 @@ func configure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.D
 	}
 
 	cfg := kentikapi.Config{
-		CloudExportAPIURL: getAPIURL(d),
-		AuthEmail:         d.Get(emailKey).(string),
-		AuthToken:         d.Get(tokenKey).(string),
-		RetryCfg:          rc,
-		LogPayloads:       d.Get(logPayloadsKey).(bool),
+		APIURL:      getAPIURL(d),
+		AuthEmail:   d.Get(emailKey).(string),
+		AuthToken:   d.Get(tokenKey).(string),
+		RetryCfg:    rc,
+		LogPayloads: d.Get(logPayloadsKey).(bool),
 	}
 
 	strippedCfg := stripSensitiveData(cfg)
 	cfgJSON, _ := json.Marshal(strippedCfg) //nolint: errcheck
 	tflog.Debug(ctx, fmt.Sprintf("Creating Kentik API client with config: %+v, JSON: %v", strippedCfg, string(cfgJSON)))
 
-	return kentikapi.NewClient(cfg), nil
+	client, err := kentikapi.NewClient(cfg)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+	return client, nil
 }
 
 func getRetryConfig(ctx context.Context, d *schema.ResourceData) (kentikapi.RetryConfig, error) {
@@ -145,7 +149,7 @@ func getRetryConfig(ctx context.Context, d *schema.ResourceData) (kentikapi.Retr
 		return kentikapi.RetryConfig{}, fmt.Errorf("get retry configuration: %v", err)
 	}
 
-	maxAttempts, ok := retryCfg[maxAttemptsKey].(int)
+	maxAttempts, ok := retryCfg[maxAttemptsKey].(uint)
 	if !ok || maxAttempts == 0 {
 		maxAttempts = defaultMaxAttempts
 	}
@@ -171,10 +175,9 @@ func getRetryConfig(ctx context.Context, d *schema.ResourceData) (kentikapi.Retr
 	// KentikAPI returns http 500 when creating CloudExport with name that is already taken.
 	// This is non-retryable situation, so exclude http 500 from RetryableStatusCodes
 	return kentikapi.RetryConfig{
-		MaxAttempts:          &maxAttempts,
-		MinDelay:             &minDelay,
-		MaxDelay:             &maxDelay,
-		RetryableStatusCodes: []int{429, 502, 503, 504},
+		MaxAttempts: &maxAttempts,
+		MinDelay:    &minDelay,
+		MaxDelay:    &maxDelay,
 	}, nil
 }
 
