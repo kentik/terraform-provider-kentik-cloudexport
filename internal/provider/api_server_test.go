@@ -11,12 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const cloudExportNotFound = -1
 
-type fakeCloudExportServer struct {
+type testAPIServer struct {
 	cloudexportpb.UnimplementedCloudExportAdminServiceServer
 	server *grpc.Server
 
@@ -27,15 +29,15 @@ type fakeCloudExportServer struct {
 	data []*cloudexportpb.CloudExport
 }
 
-func newFakeCloudExportServer(t testing.TB, ces []*cloudexportpb.CloudExport) *fakeCloudExportServer {
-	return &fakeCloudExportServer{
+func newTestAPIServer(t testing.TB, ces []*cloudexportpb.CloudExport) *testAPIServer {
+	return &testAPIServer{
 		done: make(chan struct{}),
 		t:    t,
 		data: ces,
 	}
 }
 
-func (s *fakeCloudExportServer) Start() {
+func (s *testAPIServer) Start() {
 	l, err := net.Listen("tcp", "localhost:0")
 	require.NoError(s.t, err)
 
@@ -51,17 +53,17 @@ func (s *fakeCloudExportServer) Start() {
 }
 
 // Stop blocks until the server is stopped.
-func (s *fakeCloudExportServer) Stop() {
+func (s *testAPIServer) Stop() {
 	s.server.GracefulStop()
 	<-s.done
 }
 
 // URL returns the server URL.
-func (s *fakeCloudExportServer) URL() string {
+func (s *testAPIServer) URL() string {
 	return fmt.Sprintf("http://%v", s.url)
 }
 
-func (s *fakeCloudExportServer) ListCloudExport(
+func (s *testAPIServer) ListCloudExport(
 	_ context.Context, _ *cloudexportpb.ListCloudExportRequest,
 ) (*cloudexportpb.ListCloudExportResponse, error) {
 	return &cloudexportpb.ListCloudExportResponse{
@@ -70,25 +72,29 @@ func (s *fakeCloudExportServer) ListCloudExport(
 	}, nil
 }
 
-func (s *fakeCloudExportServer) GetCloudExport(
+func (s *testAPIServer) GetCloudExport(
 	ctx context.Context, req *cloudexportpb.GetCloudExportRequest,
 ) (*cloudexportpb.GetCloudExportResponse, error) {
 	if idx := s.findByID(req.GetId()); idx != cloudExportNotFound {
 		return &cloudexportpb.GetCloudExportResponse{Export: s.data[idx]}, nil
 	}
-	return nil, fmt.Errorf("cloud export with ID %q not found", req.GetId())
+	return nil, status.Errorf(codes.NotFound, "cloud export with ID %q not found", req.GetId())
 }
 
-func (s *fakeCloudExportServer) CreateCloudExport(
+func (s *testAPIServer) CreateCloudExport(
 	ctx context.Context, req *cloudexportpb.CreateCloudExportRequest,
 ) (*cloudexportpb.CreateCloudExportResponse, error) {
 	newExport := req.GetExport()
 
 	if s.findByName(newExport.Name) != cloudExportNotFound {
-		return nil, fmt.Errorf("cloud export %q already exists", newExport.Name)
+		return nil, status.Errorf(codes.AlreadyExists, "cloud export %q already exists", newExport.Name)
 	}
 
-	newExport.Id = s.allocateNewID()
+	newID, err := s.allocateNewID()
+	if err != nil {
+		return nil, err
+	}
+	newExport.Id = newID
 	newExport.CurrentStatus = &cloudexportpb.Status{
 		Status:               "OK",
 		ErrorMessage:         "No errors",
@@ -104,7 +110,7 @@ func (s *fakeCloudExportServer) CreateCloudExport(
 	}, nil
 }
 
-func (s *fakeCloudExportServer) UpdateCloudExport(
+func (s *testAPIServer) UpdateCloudExport(
 	ctx context.Context, req *cloudexportpb.UpdateCloudExportRequest,
 ) (*cloudexportpb.UpdateCloudExportResponse, error) {
 	exportUpdate := req.GetExport()
@@ -114,31 +120,36 @@ func (s *fakeCloudExportServer) UpdateCloudExport(
 			Export: exportUpdate,
 		}, nil
 	}
-	return nil, fmt.Errorf("cloud export of id %q doesn't exists", exportUpdate.Id)
+	return nil, status.Errorf(codes.NotFound, "cloud export of id %q doesn't exists", exportUpdate.Id)
 }
 
-func (s *fakeCloudExportServer) DeleteCloudExport(
+func (s *testAPIServer) DeleteCloudExport(
 	ctx context.Context, req *cloudexportpb.DeleteCloudExportRequest,
 ) (*cloudexportpb.DeleteCloudExportResponse, error) {
-	return &cloudexportpb.DeleteCloudExportResponse{}, nil
+	if i := s.findByID(req.GetId()); i != cloudExportNotFound {
+		s.data = append(s.data[:i], s.data[i+1:]...)
+		return &cloudexportpb.DeleteCloudExportResponse{}, nil
+	}
+	return nil, status.Errorf(codes.NotFound, "cloud export of id %q doesn't exists", req.GetId())
 }
 
-func (s *fakeCloudExportServer) allocateNewID() string {
+func (s *testAPIServer) allocateNewID() (string, error) {
 	var id int
 
 	for _, item := range s.data {
 		itemID, err := strconv.Atoi(item.Id)
 		if err != nil {
-			itemID = 1000000 // str conversion error, assume some high integer for the id
+			return "", status.Errorf(codes.Internal, "cannot allocate ID to new cloud export, "+
+				"%q string is not a valid integer", item.Id)
 		}
 		if itemID > id {
 			id = itemID
 		}
 	}
-	return strconv.FormatInt(int64(id)+1, 10)
+	return strconv.FormatInt(int64(id)+1, 10), nil
 }
 
-func (s *fakeCloudExportServer) findByName(name string) int {
+func (s *testAPIServer) findByName(name string) int {
 	for i, ce := range s.data {
 		if ce.Name == name {
 			return i
@@ -147,7 +158,7 @@ func (s *fakeCloudExportServer) findByName(name string) int {
 	return cloudExportNotFound
 }
 
-func (s *fakeCloudExportServer) findByID(id string) int {
+func (s *testAPIServer) findByID(id string) int {
 	for i, ce := range s.data {
 		if ce.Id == id {
 			return i

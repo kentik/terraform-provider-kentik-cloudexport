@@ -19,7 +19,7 @@ func TestProvider(t *testing.T) {
 func TestProvider_Configure_MinimalConfig(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 
@@ -34,7 +34,7 @@ func TestProvider_Configure_MinimalConfig(t *testing.T) {
 func TestProvider_Configure_CustomRetryConfig(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 
@@ -49,7 +49,7 @@ func TestProvider_Configure_CustomRetryConfig(t *testing.T) {
 func TestProvider_Configure_InvalidRetryConfig(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 

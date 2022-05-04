@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,18 +29,18 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	tflog.Debug(ctx, "Create cloud export Kentik API request", map[string]interface{}{"request": export})
 
-	resp, err := m.(*kentikapi.Client).CloudExports.Create(ctx, export)
-	tflog.Debug(ctx, "Create cloud export Kentik API response", map[string]interface{}{"response": resp})
+	export, err = m.(*kentikapi.Client).CloudExports.Create(ctx, export)
+	tflog.Debug(ctx, "Create cloud export Kentik API response", map[string]interface{}{"response": export})
 	if err != nil {
 		return detailedDiagError("Failed to create cloud export", err)
 	}
 
-	err = d.Set("id", resp.ID)
+	err = d.Set("id", export.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resp.ID) // create the resource in TF state
+	d.SetId(export.ID) // create the resource in TF state
 
 	// read back the just-created resource to handle the case when server applies modifications to provided data
 	return resourceCloudExportRead(ctx, d, m)
@@ -47,13 +48,14 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceCloudExportRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Get cloud export Kentik API request", map[string]interface{}{"ID": d.Get("id").(string)})
-	resp, err := m.(*kentikapi.Client).CloudExports.Get(ctx, d.Get("id").(string))
+	export, err := m.(*kentikapi.Client).CloudExports.Get(ctx, d.Get("id").(string))
 
-	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": resp})
+	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": export})
 	if err != nil {
+		d.SetId("") // delete the resource in TF state
 		return detailedDiagError("Failed to read cloud export", err)
 	}
-	mapExport := cloudExportToMap(resp)
+	mapExport := cloudExportToMap(export)
 	for k, v := range mapExport {
 		if err = d.Set(k, v); err != nil {
 			return diag.FromErr(err)
@@ -88,6 +90,6 @@ func resourceCloudExportDelete(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		return detailedDiagError("Failed to delete cloud export", err)
 	}
-	tflog.Debug(ctx, "Deleted cloud export Kentik API response")
+	tflog.Debug(ctx, fmt.Sprintf("Deleted cloud export with ID %v in Kentik", d.Get("id").(string)))
 	return nil
 }

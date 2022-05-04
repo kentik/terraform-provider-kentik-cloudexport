@@ -28,7 +28,7 @@ Development steps:
 
 ### Test
 
-Tests run the provider against a `fakeCloudExportServer`
+Tests run the provider against a `testAPIServer`
 
 This allows to:
 - avoid the necessity of providing valid API credentials

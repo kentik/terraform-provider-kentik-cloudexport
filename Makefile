@@ -31,6 +31,6 @@ lint:
 	golangci-lint run
 
 test:
-	go test ./... -timeout=5m -count=1
+	go test ./... -timeout=5m
 
 .PHONY: build check-docs docs fmt install lint test

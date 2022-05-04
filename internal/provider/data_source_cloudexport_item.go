@@ -19,19 +19,19 @@ func dataSourceCloudExportItem() *schema.Resource {
 
 func dataSourceCloudExportItemRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Get cloud export Kentik API request", map[string]interface{}{"ID": d.Get("id").(string)})
-	getResp, err := m.(*kentikapi.Client).CloudExports.Get(ctx, d.Get("id").(string))
-	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": getResp})
+	export, err := m.(*kentikapi.Client).CloudExports.Get(ctx, d.Get("id").(string))
+	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": export})
 	if err != nil {
 		return detailedDiagError("Failed to read cloud export item", err)
 	}
 
-	mapExport := cloudExportToMap(getResp)
+	mapExport := cloudExportToMap(export)
 	for k, v := range mapExport {
 		if err := d.Set(k, v); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	d.SetId(getResp.ID)
+	d.SetId(export.ID)
 
 	return nil
 }

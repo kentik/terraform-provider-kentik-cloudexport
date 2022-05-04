@@ -13,7 +13,7 @@ import (
 func TestResourceCloudExportAWS(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 
@@ -79,7 +79,7 @@ func TestResourceCloudExportAWS(t *testing.T) {
 func TestResourceCloudExportGCE(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 
@@ -127,7 +127,7 @@ func TestResourceCloudExportGCE(t *testing.T) {
 func TestResourceCloudExportIBM(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 
@@ -173,7 +173,7 @@ func TestResourceCloudExportIBM(t *testing.T) {
 func TestResourceCloudExportAzure(t *testing.T) {
 	t.Parallel()
 
-	server := newFakeCloudExportServer(t, makeInitialCloudExports())
+	server := newTestAPIServer(t, makeInitialCloudExports())
 	server.Start()
 	defer server.Stop()
 
