@@ -10,7 +10,7 @@ require (
 	github.com/kentik/community_sdk_golang v0.2.1-0.20220407113303-5f9f1d75a145
 	github.com/stretchr/testify v1.7.1
 	google.golang.org/grpc v1.45.0
-	google.golang.org/protobuf v1.27.1
+	google.golang.org/protobuf v1.28.0
 	mvdan.cc/gofumpt v0.3.1
 )
 
