@@ -2,12 +2,13 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kentik/community_sdk_golang/kentikapi"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func resourceCloudExport() *schema.Resource {
@@ -52,7 +53,12 @@ func resourceCloudExportRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": export})
 	if err != nil {
-		d.SetId("") // delete the resource in TF state
+		if e, ok := status.FromError(err); ok {
+			if e.Code() == codes.NotFound {
+				d.SetId("") // delete the resource in TF state
+				return nil
+			}
+		}
 		return detailedDiagError("Failed to read cloud export", err)
 	}
 	mapExport := cloudExportToMap(export)
@@ -90,6 +96,6 @@ func resourceCloudExportDelete(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		return detailedDiagError("Failed to delete cloud export", err)
 	}
-	tflog.Debug(ctx, fmt.Sprintf("Deleted cloud export with ID %v in Kentik", d.Get("id").(string)))
+	tflog.Debug(ctx, "Deleted cloud export in Kentik", map[string]interface{}{"ID": d.Get("id").(string)})
 	return nil
 }

@@ -329,7 +329,7 @@ func cloudExportToMap(e *models.CloudExport) map[string]interface{} {
 
 // resourceDataToCloudExport is used for API create/update operations to fill cloudexport item from terraform resource.
 func resourceDataToCloudExport(d *schema.ResourceData) (*models.CloudExport, error) {
-	// Note: only set the user-writable attributes, read-only attributes that are only generated on server side:
+	// Note: only set the user-writable attributes and ID. Read-only attributes that are only generated on server side:
 	// CurrentStatus, are left with nil values and so are not serialized and not sent to API server
 	export := models.CloudExport{}
 
@@ -366,27 +366,27 @@ func resourceDataToCloudExport(d *schema.ResourceData) (*models.CloudExport, err
 	cloudProvider := d.Get("cloud_provider").(string) //nolint: errcheck, forcetypeassert // type enforced by schema
 	export.CloudProvider = models.CloudProvider(cloudProvider)
 
-	if err := resourceDataToCEProperties(&export, cloudProvider, d); err != nil {
+	properties, err := resourceDataToCEProperties(cloudProvider, d)
+	if err != nil {
 		return nil, err
 	}
+	export.Properties = properties
 
-	m, err := getObjectFromNestedResourceData(d.Get("bgp"))
+	bgp, err := resourceDataToBGPProperties(d)
 	if err != nil {
-		return nil, fmt.Errorf("bgp properties error: %s", err)
+		return nil, err
 	}
-	if m != nil {
-		resourceDataToBGPProperties(&export, m)
-	}
+	export.BGP = bgp
 
 	return &export, nil
 }
 
-func resourceDataToCEProperties(export *models.CloudExport, cloudProvider string, d *schema.ResourceData) error {
+func resourceDataToCEProperties(cloudProvider string, d *schema.ResourceData) (models.CloudExportProperties, error) {
 	// validation: for any given cloud_provider, there should also be an object of the same name,
 	// containing configuration details, e.g. for cloud_provider="ibm", ibm{...} object should be defined
 	providerObj, ok := d.GetOk(cloudProvider)
 	if !ok {
-		return fmt.Errorf("for cloud_provider=%[1]s, there should also be %[1]s{...} attribute provided", cloudProvider)
+		return nil, fmt.Errorf("for cloud_provider=%[1]s, there should also be %[1]s{...} attribute provided", cloudProvider)
 	}
 	providerDef := providerObj.([]interface{})[0]       // extract nested object under index 0. Terraform clumsiness
 	providerMap := providerDef.(map[string]interface{}) //nolint: errcheck, forcetypeassert // type enforced by schema
@@ -404,7 +404,7 @@ func resourceDataToCEProperties(export *models.CloudExport, cloudProvider string
 			if v, ok := providerMap["multiple_buckets"].(bool); ok {
 				aws.MultipleBuckets = &v
 			}
-			export.Properties = &aws
+			return &aws, nil
 		}
 	case "azure":
 		{
@@ -417,7 +417,7 @@ func resourceDataToCEProperties(export *models.CloudExport, cloudProvider string
 			if v, ok := providerMap["security_principal_enabled"].(bool); ok {
 				azure.SecurityPrincipalEnabled = &v
 			}
-			export.Properties = &azure
+			return &azure, nil
 		}
 	case "gce":
 		{
@@ -425,22 +425,28 @@ func resourceDataToCEProperties(export *models.CloudExport, cloudProvider string
 				Project:      providerMap["project"].(string),
 				Subscription: providerMap["subscription"].(string),
 			}
-			export.Properties = &gce
+			return &gce, nil
 		}
 	case "ibm":
 		{
 			ibm := models.IBMProperties{
 				Bucket: providerMap["bucket"].(string),
 			}
-			export.Properties = &ibm
+			return &ibm, nil
 		}
 	default:
-		return fmt.Errorf("cloud_provider should be one of [aws, azure, ibm, gce], got: %q", cloudProvider)
+		return nil, fmt.Errorf("cloud_provider should be one of [aws, azure, ibm, gce], got: %q", cloudProvider)
 	}
-	return nil
 }
 
-func resourceDataToBGPProperties(export *models.CloudExport, m map[string]interface{}) {
+func resourceDataToBGPProperties(d *schema.ResourceData) (*models.BGPProperties, error) {
+	m, err := getObjectFromNestedResourceData(d.Get("bgp"))
+	if err != nil {
+		return nil, fmt.Errorf("bgp properties error: %s", err)
+	}
+	if m == nil {
+		return nil, nil
+	}
 	bgp := models.BGPProperties{
 		UseBGPDeviceID: m["use_bgp_device_id"].(string),
 		DeviceBGPType:  m["device_bgp_type"].(string),
@@ -448,5 +454,5 @@ func resourceDataToBGPProperties(export *models.CloudExport, m map[string]interf
 	if v, ok := m["apply_bgp"].(bool); ok {
 		bgp.ApplyBGP = &v
 	}
-	export.BGP = &bgp
+	return &bgp, nil
 }
