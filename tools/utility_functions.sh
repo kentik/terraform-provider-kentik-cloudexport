@@ -91,4 +91,3 @@ function check_env_examples() {
         die "KTAPI_AUTH_TOKEN env variable must be set to Kentik API authorization token"
     fi
 }
-

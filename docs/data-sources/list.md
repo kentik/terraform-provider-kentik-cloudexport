@@ -35,7 +35,6 @@ output "export_list" {
 
 Read-Only:
 
-- `api_root` (String)
 - `aws` (List of Object) (see [below for nested schema](#nestedobjatt--items--aws))
 - `azure` (List of Object) (see [below for nested schema](#nestedobjatt--items--azure))
 - `bgp` (List of Object) (see [below for nested schema](#nestedobjatt--items--bgp))
@@ -43,7 +42,6 @@ Read-Only:
 - `current_status` (List of Object) (see [below for nested schema](#nestedobjatt--items--current_status))
 - `description` (String)
 - `enabled` (Boolean)
-- `flow_dest` (String)
 - `gce` (List of Object) (see [below for nested schema](#nestedobjatt--items--gce))
 - `ibm` (List of Object) (see [below for nested schema](#nestedobjatt--items--ibm))
 - `id` (String)

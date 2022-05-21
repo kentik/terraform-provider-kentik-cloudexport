@@ -2,13 +2,13 @@ package provider
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kentik/community_sdk_golang/kentikapi"
-	"github.com/kentik/community_sdk_golang/kentikapi/cloudexport"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func resourceCloudExport() *schema.Resource {
@@ -28,24 +28,20 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	req := *cloudexport.NewV202101beta1CreateCloudExportRequest()
-	req.Export = export
-	tflog.Debug(ctx, "Create cloud export Kentik API request", map[string]interface{}{"request": req})
-	resp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
-		ExportCreate(ctx).
-		Body(req).
-		Execute()
-	tflog.Debug(ctx, "Create cloud export Kentik API response", map[string]interface{}{"response": resp})
+	tflog.Debug(ctx, "Create cloud export Kentik API request", map[string]interface{}{"request": export})
+
+	export, err = m.(*kentikapi.Client).CloudExports.Create(ctx, export)
+	tflog.Debug(ctx, "Create cloud export Kentik API response", map[string]interface{}{"response": export})
 	if err != nil {
-		return detailedDiagError("Failed to create cloud export", err, httpResp)
+		return detailedDiagError("Failed to create cloud export", err)
 	}
 
-	err = d.Set("id", resp.Export.GetId())
+	err = d.Set("id", export.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resp.Export.GetId()) // create the resource in TF state
+	d.SetId(export.ID) // create the resource in TF state
 
 	// read back the just-created resource to handle the case when server applies modifications to provided data
 	return resourceCloudExportRead(ctx, d, m)
@@ -53,18 +49,19 @@ func resourceCloudExportCreate(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceCloudExportRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Get cloud export Kentik API request", map[string]interface{}{"ID": d.Get("id").(string)})
-	resp, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
-		ExportGet(ctx, d.Get("id").(string)).
-		Execute()
-	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": resp})
+	export, err := m.(*kentikapi.Client).CloudExports.Get(ctx, d.Get("id").(string))
+
+	tflog.Debug(ctx, "Get cloud export Kentik API response", map[string]interface{}{"response": export})
 	if err != nil {
-		if httpResp.StatusCode == http.StatusNotFound {
-			d.SetId("") // delete the resource in TF state
-			return nil
+		if e, ok := status.FromError(err); ok {
+			if e.Code() == codes.NotFound {
+				d.SetId("") // delete the resource in TF state
+				return nil
+			}
 		}
-		return detailedDiagError("Failed to read cloud export", err, httpResp)
+		return detailedDiagError("Failed to read cloud export", err)
 	}
-	mapExport := cloudExportToMap(resp.Export)
+	mapExport := cloudExportToMap(export)
 	for k, v := range mapExport {
 		if err = d.Set(k, v); err != nil {
 			return diag.FromErr(err)
@@ -81,17 +78,11 @@ func resourceCloudExportUpdate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		req := *cloudexport.NewV202101beta1UpdateCloudExportRequest()
-		req.Export = export
-		tflog.Debug(ctx, "Update cloud export Kentik API request", map[string]interface{}{"request": req})
-		_, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
-			ExportUpdate(ctx, d.Get("id").(string)).
-			Body(req).
-			Execute()
-		tflog.Debug(ctx, "Update cloud export Kentik API response", map[string]interface{}{"response": httpResp.Body})
+		tflog.Debug(ctx, "Update cloud export Kentik API request", map[string]interface{}{"request": export})
+		resp, err := m.(*kentikapi.Client).CloudExports.Update(ctx, export)
+		tflog.Debug(ctx, "Update cloud export Kentik API response", map[string]interface{}{"response": resp})
 		if err != nil {
-			return detailedDiagError("Failed to update cloud export", err, httpResp)
+			return detailedDiagError("Failed to update cloud export", err)
 		}
 	}
 
@@ -101,13 +92,10 @@ func resourceCloudExportUpdate(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceCloudExportDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	tflog.Debug(ctx, "Delete cloud export Kentik API request", map[string]interface{}{"ID": d.Get("id").(string)})
-	_, httpResp, err := m.(*kentikapi.Client).CloudExportAdminServiceAPI.
-		ExportDelete(ctx, d.Get("id").(string)).
-		Execute()
-	tflog.Debug(ctx, "Delete cloud export Kentik API response", map[string]interface{}{"response": httpResp.Body})
+	err := m.(*kentikapi.Client).CloudExports.Delete(ctx, d.Get("id").(string))
 	if err != nil {
-		return detailedDiagError("Failed to delete cloud export", err, httpResp)
+		return detailedDiagError("Failed to delete cloud export", err)
 	}
-
+	tflog.Debug(ctx, "Deleted cloud export in Kentik", map[string]interface{}{"ID": d.Get("id").(string)})
 	return nil
 }

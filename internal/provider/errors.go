@@ -1,24 +1,14 @@
 package provider
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
-func detailedDiagError(summary string, err error, httpResp *http.Response) diag.Diagnostics {
-	var details string
-	if httpResp != nil {
-		details = fmt.Sprintf("%v %v", err.Error(), httpResp.Body)
-	} else {
-		details = err.Error()
-	}
-
+func detailedDiagError(summary string, err error) diag.Diagnostics {
 	diags := diag.Diagnostic{
 		Severity: diag.Error,
 		Summary:  summary,
-		Detail:   details,
+		Detail:   err.Error(),
 	}
 	return diag.Diagnostics{diags}
 }

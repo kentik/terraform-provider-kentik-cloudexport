@@ -28,17 +28,12 @@ Development steps:
 
 ### Test
 
-Tests run the provider against a `test-api-server` that serves data read from [test-data.json](internal/provider/test-data.json)
+Tests run the provider against a `testAPIServer`
 
 This allows to:
 - avoid the necessity of providing valid API credentials
 - avoid creating resources on remote server
 - make the test results more reliable
-
-Running `make test` will:
-1. Build and run test-api-server which emulates Kentik API v6 by returning static preconfigured responses
-2. Run tests (communication with `test-api-server`)
-3. Shut down `test-api-server`
 
 ### Debug
 

@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -17,49 +18,73 @@ func TestProvider(t *testing.T) {
 
 func TestProvider_Configure_MinimalConfig(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{{
-			Config: minimalConfig,
+			Config: makeMinimalConfig(server.URL()),
 		}},
 	})
 }
 
 func TestProvider_Configure_CustomRetryConfig(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{{
-			Config: customRetryConfig,
+			Config: makeCustomRetryConfig(server.URL()),
 		}},
 	})
 }
 
 func TestProvider_Configure_InvalidRetryConfig(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{{
-			Config:      invalidRetryConfig,
+			Config:      makeInvalidRetryConfig(server.URL()),
 			ExpectError: regexp.MustCompile("parse max_delay duration"),
 		}},
 	})
 }
 
-const (
-	minimalConfig = `
-		provider "kentik-cloudexport" {}
+func makeMinimalConfig(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
 		
 		// Trigger arbitrary action
 		data "kentik-cloudexport_item" "aws" {
 			id = "1"
 		}
-	`
-	customRetryConfig = `
+	`,
+		apiURL,
+	)
+}
+
+func makeCustomRetryConfig(apiURL string) string {
+	return fmt.Sprintf(`
 		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
 			retry {
 				max_attempts = 66
 				min_delay = "100ms"
@@ -72,9 +97,17 @@ const (
 		data "kentik-cloudexport_item" "aws" {
 			id = "1"
 		}
-	`
-	invalidRetryConfig = `
+	`,
+		apiURL,
+	)
+}
+
+func makeInvalidRetryConfig(apiURL string) string {
+	return fmt.Sprintf(`
 		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
 			retry {
 				max_attempts = 66
 				min_delay = "100ms"
@@ -87,5 +120,7 @@ const (
 		data "kentik-cloudexport_item" "aws" {
 			id = "1"
 		}
-	`
-)
+	`,
+		apiURL,
+	)
+}

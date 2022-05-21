@@ -8,28 +8,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-// Note: resource create/update/get/delete requests that result from below tests are processed by test API server
-// (running in background).
 // Note: we only check the user-provided values as we don't control the server-provided ones
 
 func TestResourceCloudExportAWS(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceCloudExportCreateAWS,
+				Config: makeTestAccResourceCloudExportCreateAWS(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceAWSResource, "id"),
 					resource.TestCheckResourceAttr(ceAWSResource, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
 					resource.TestCheckResourceAttr(ceAWSResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAWSResource, "name", "resource_test_terraform_aws_export"),
 					resource.TestCheckResourceAttr(ceAWSResource, "description", "resource test aws export"),
-					resource.TestCheckResourceAttr(ceAWSResource, "api_root", "http://api.dummy.com"),
-					resource.TestCheckResourceAttr(ceAWSResource, "flow_dest", "http://flow.dummy.com"),
 					resource.TestCheckResourceAttr(ceAWSResource, "plan_id", "9948"),
 					resource.TestCheckResourceAttr(ceAWSResource, "cloud_provider", "aws"),
+					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.apply_bgp", "true"),
+					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.use_bgp_device_id", "1234"),
+					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.device_bgp_type", "router"),
 					resource.TestCheckResourceAttr(ceAWSResource, "aws.0.bucket", "resource-terraform-aws-bucket"),
 					resource.TestCheckResourceAttr(
 						ceAWSResource, "aws.0.iam_role_arn", "arn:aws:iam::003740049406:role/trafficTerraformIngestRole",
@@ -40,17 +43,18 @@ func TestResourceCloudExportAWS(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportUpdateAWS,
+				Config: makeTestAccResourceCloudExportUpdateAWS(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceAWSResource, "id"),
 					resource.TestCheckResourceAttr(ceAWSResource, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
 					resource.TestCheckResourceAttr(ceAWSResource, "enabled", "false"),
 					resource.TestCheckResourceAttr(ceAWSResource, "name", "resource_test_terraform_aws_export_updated"),
 					resource.TestCheckResourceAttr(ceAWSResource, "description", "resource test aws export updated"),
-					resource.TestCheckResourceAttr(ceAWSResource, "api_root", "http://api.dummy2.com"),
-					resource.TestCheckResourceAttr(ceAWSResource, "flow_dest", "http://flow.dummy2.com"),
 					resource.TestCheckResourceAttr(ceAWSResource, "plan_id", "3333"),
 					resource.TestCheckResourceAttr(ceAWSResource, "cloud_provider", "aws"),
+					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.apply_bgp", "false"),
+					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.use_bgp_device_id", "4444"),
+					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.device_bgp_type", "dns"),
 					resource.TestCheckResourceAttr(ceAWSResource, "aws.0.bucket", "resource-terraform-aws-bucket-updated"),
 					resource.TestCheckResourceAttr(
 						ceAWSResource,
@@ -63,7 +67,7 @@ func TestResourceCloudExportAWS(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportDestroy,
+				Config: makeTestAccResourceCloudExportDestroy(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					testResourceDoesntExists(ceAWSResource),
 				),
@@ -74,12 +78,16 @@ func TestResourceCloudExportAWS(t *testing.T) {
 
 func TestResourceCloudExportGCE(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceCloudExportCreateGCE,
+				Config: makeTestAccResourceCloudExportCreateGCE(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceGCEResource, "id"),
 					resource.TestCheckResourceAttr(ceGCEResource, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
@@ -93,7 +101,7 @@ func TestResourceCloudExportGCE(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportUpdateGCE,
+				Config: makeTestAccResourceCloudExportUpdateGCE(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceGCEResource, "id"),
 					resource.TestCheckResourceAttr(ceGCEResource, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
@@ -107,7 +115,7 @@ func TestResourceCloudExportGCE(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportDestroy,
+				Config: makeTestAccResourceCloudExportDestroy(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					testResourceDoesntExists(ceGCEResource),
 				),
@@ -118,12 +126,16 @@ func TestResourceCloudExportGCE(t *testing.T) {
 
 func TestResourceCloudExportIBM(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceCloudExportCreateIBM,
+				Config: makeTestAccResourceCloudExportCreateIBM(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceIBMResource, "id"),
 					resource.TestCheckResourceAttr(ceIBMResource, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
@@ -136,7 +148,7 @@ func TestResourceCloudExportIBM(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportUpdateIBM,
+				Config: makeTestAccResourceCloudExportUpdateIBM(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceIBMResource, "id"),
 					resource.TestCheckResourceAttr(ceIBMResource, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
@@ -149,7 +161,7 @@ func TestResourceCloudExportIBM(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportDestroy,
+				Config: makeTestAccResourceCloudExportDestroy(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					testResourceDoesntExists(ceIBMResource),
 				),
@@ -160,12 +172,16 @@ func TestResourceCloudExportIBM(t *testing.T) {
 
 func TestResourceCloudExportAzure(t *testing.T) {
 	t.Parallel()
+
+	server := newTestAPIServer(t, makeInitialCloudExports())
+	server.Start()
+	defer server.Stop()
+
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
 		ProviderFactories: providerFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceCloudExportCreateAzure,
+				Config: makeTestAccResourceCloudExportCreateAzure(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceAzureResource, "id"),
 					resource.TestCheckResourceAttr(ceAzureResource, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
@@ -182,7 +198,7 @@ func TestResourceCloudExportAzure(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportUpdateAzure,
+				Config: makeTestAccResourceCloudExportUpdateAzure(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(ceAzureResource, "id"),
 					resource.TestCheckResourceAttr(ceAzureResource, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
@@ -199,55 +215,9 @@ func TestResourceCloudExportAzure(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceCloudExportDestroy,
+				Config: makeTestAccResourceCloudExportDestroy(server.URL()),
 				Check: resource.ComposeTestCheckFunc(
 					testResourceDoesntExists(ceAzureResource),
-				),
-			},
-		},
-	})
-}
-
-func TestResourceCloudExportBGP(t *testing.T) {
-	t.Parallel()
-	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { checkAPIServerConnection(t) },
-		ProviderFactories: providerFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: testAccResourceCloudExportCreateBGP,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(ceBGPResource, "id"),
-					resource.TestCheckResourceAttr(ceBGPResource, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
-					resource.TestCheckResourceAttr(ceBGPResource, "enabled", "true"),
-					resource.TestCheckResourceAttr(ceBGPResource, "name", "resource_test_terraform_bgp_export"),
-					resource.TestCheckResourceAttr(ceBGPResource, "description", "resource test bgp export"),
-					resource.TestCheckResourceAttr(ceBGPResource, "plan_id", "9948"),
-					resource.TestCheckResourceAttr(ceBGPResource, "cloud_provider", "bgp"),
-					resource.TestCheckResourceAttr(ceBGPResource, "bgp.0.apply_bgp", "true"),
-					resource.TestCheckResourceAttr(ceBGPResource, "bgp.0.use_bgp_device_id", "1324"),
-					resource.TestCheckResourceAttr(ceBGPResource, "bgp.0.device_bgp_type", "router"),
-				),
-			},
-			{
-				Config: testAccResourceCloudExportUpdateBGP,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(ceBGPResource, "id"),
-					resource.TestCheckResourceAttr(ceBGPResource, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
-					resource.TestCheckResourceAttr(ceBGPResource, "enabled", "false"),
-					resource.TestCheckResourceAttr(ceBGPResource, "name", "resource_test_terraform_bgp_export_updated"),
-					resource.TestCheckResourceAttr(ceBGPResource, "description", "resource test bgp export updated"),
-					resource.TestCheckResourceAttr(ceBGPResource, "plan_id", "3333"),
-					resource.TestCheckResourceAttr(ceBGPResource, "cloud_provider", "bgp"),
-					resource.TestCheckResourceAttr(ceBGPResource, "bgp.0.apply_bgp", "false"),
-					resource.TestCheckResourceAttr(ceBGPResource, "bgp.0.use_bgp_device_id", "4444"),
-					resource.TestCheckResourceAttr(ceBGPResource, "bgp.0.device_bgp_type", "dns"),
-				),
-			},
-			{
-				Config: testAccResourceCloudExportDestroy,
-				Check: resource.ComposeTestCheckFunc(
-					testResourceDoesntExists(ceBGPResource),
 				),
 			},
 		},
@@ -269,219 +239,237 @@ func testResourceDoesntExists(name string) resource.TestCheckFunc {
 const (
 	ceAWSResource   = "kentik-cloudexport_item.test_aws"
 	ceAzureResource = "kentik-cloudexport_item.test_azure"
-	ceBGPResource   = "kentik-cloudexport_item.test_bgp"
 	ceGCEResource   = "kentik-cloudexport_item.test_gce"
 	ceIBMResource   = "kentik-cloudexport_item.test_ibm"
 )
 
-const testAccResourceCloudExportCreateAWS = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportCreateAWS(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_aws" {
+			name= "resource_test_terraform_aws_export"
+			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
+			enabled=true
+			description= "resource test aws export"
+			plan_id= "9948"
+			cloud_provider= "aws"
+			bgp {
+				apply_bgp= true
+				use_bgp_device_id= "1234"
+				device_bgp_type= "router"
+			}
+			aws {
+				bucket= "resource-terraform-aws-bucket"
+				iam_role_arn= "arn:aws:iam::003740049406:role/trafficTerraformIngestRole"
+				region= "eu-central-1"
+				delete_after_read= true
+				multiple_buckets= true
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_aws" {
-	name= "resource_test_terraform_aws_export"
-	type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
-	enabled=true
-	description= "resource test aws export"
-	api_root= "http://api.dummy.com"
-	flow_dest= "http://flow.dummy.com"
-	plan_id= "9948"
-	cloud_provider= "aws"
-	aws {
-		bucket= "resource-terraform-aws-bucket"
-		iam_role_arn= "arn:aws:iam::003740049406:role/trafficTerraformIngestRole"
-		region= "eu-central-1"
-		delete_after_read= true
-		multiple_buckets= true
-	}
-  }
-`
-
-const testAccResourceCloudExportUpdateAWS = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportUpdateAWS(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_aws" {
+			name= "resource_test_terraform_aws_export_updated"
+			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
+			enabled=false
+			description= "resource test aws export updated"
+			plan_id= "3333"
+			cloud_provider= "aws"
+			bgp {
+				apply_bgp= false
+				use_bgp_device_id= "4444"
+				device_bgp_type= "dns"
+			}
+			aws {
+				bucket= "resource-terraform-aws-bucket-updated"
+				iam_role_arn= "arn:aws:iam::003740049406:role/trafficTerraformIngestRole_updated"
+				region= "eu-central-1-updated"
+				delete_after_read= false
+				multiple_buckets= false
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_aws" {
-	name= "resource_test_terraform_aws_export_updated"
-	type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
-	enabled=false
-	description= "resource test aws export updated"
-	api_root= "http://api.dummy2.com"
-	flow_dest= "http://flow.dummy2.com"
-	plan_id= "3333"
-	cloud_provider= "aws"
-	aws {
-		bucket= "resource-terraform-aws-bucket-updated"
-		iam_role_arn= "arn:aws:iam::003740049406:role/trafficTerraformIngestRole_updated"
-		region= "eu-central-1-updated"
-		delete_after_read= false
-		multiple_buckets= false
-	}
-  }
-`
-
-const testAccResourceCloudExportCreateGCE = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportCreateGCE(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_gce" {
+			name= "resource_test_terraform_gce_export"
+			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
+			enabled=true
+			description= "resource test gce export"
+			plan_id= "9948"
+			cloud_provider= "gce"
+			gce {
+				project= "gce project"
+				subscription= "gce subscription"
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_gce" {
-	name= "resource_test_terraform_gce_export"
-	type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
-	enabled=true
-	description= "resource test gce export"
-	plan_id= "9948"
-	cloud_provider= "gce"
-	gce {
-		project= "gce project"
-		subscription= "gce subscription"
-	}
-  }
-`
-
-const testAccResourceCloudExportUpdateGCE = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportUpdateGCE(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_gce" {
+			name= "resource_test_terraform_gce_export_updated"
+			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
+			enabled=false
+			description= "resource test gce export updated"
+			plan_id= "3333"
+			cloud_provider= "gce"
+			gce {
+				project= "gce project updated"
+				subscription= "gce subscription updated"
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_gce" {
-	name= "resource_test_terraform_gce_export_updated"
-	type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
-	enabled=false
-	description= "resource test gce export updated"
-	plan_id= "3333"
-	cloud_provider= "gce"
-	gce {
-		project= "gce project updated"
-		subscription= "gce subscription updated"
-	}
-  }
-`
-
-const testAccResourceCloudExportCreateIBM = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportCreateIBM(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_ibm" {
+			name= "resource_test_terraform_ibm_export"
+			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
+			enabled=true
+			description= "resource test ibm export"
+			plan_id= "9948"
+			cloud_provider= "ibm"
+			ibm {
+				bucket= "ibm-bucket"
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_ibm" {
-	name= "resource_test_terraform_ibm_export"
-	type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
-	enabled=true
-	description= "resource test ibm export"
-	plan_id= "9948"
-	cloud_provider= "ibm"
-	ibm {
-		bucket= "ibm-bucket"
-	}
-  }
-`
-
-const testAccResourceCloudExportUpdateIBM = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportUpdateIBM(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_ibm" {
+			name= "resource_test_terraform_ibm_export_updated"
+			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
+			enabled=false
+			description= "resource test ibm export updated"
+			plan_id= "3333"
+			cloud_provider= "ibm"
+			ibm {
+				bucket= "ibm-bucket-updated"
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_ibm" {
-	name= "resource_test_terraform_ibm_export_updated"
-	type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
-	enabled=false
-	description= "resource test ibm export updated"
-	plan_id= "3333"
-	cloud_provider= "ibm"
-	ibm {
-		bucket= "ibm-bucket-updated"
-	}
-  }
-`
-
-const testAccResourceCloudExportCreateAzure = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportCreateAzure(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_azure" {
+			name= "resource_test_terraform_azure_export"
+			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
+			enabled=true
+			description= "resource test azure export"
+			plan_id= "9948"
+			cloud_provider= "azure"
+			azure {
+				location= "centralus"
+				resource_group= "traffic-generator"
+				storage_account= "kentikstorage"
+				subscription_id= "7777"
+				security_principal_enabled=true
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_azure" {
-	name= "resource_test_terraform_azure_export"
-	type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
-	enabled=true
-	description= "resource test azure export"
-	plan_id= "9948"
-	cloud_provider= "azure"
-	azure {
-		location= "centralus"
-		resource_group= "traffic-generator"
-		storage_account= "kentikstorage"
-		subscription_id= "7777"
-		security_principal_enabled=true
-	}
-  }
-`
-
-const testAccResourceCloudExportUpdateAzure = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportUpdateAzure(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		
+		resource "kentik-cloudexport_item" "test_azure" {
+			name= "resource_test_terraform_azure_export_updated"
+			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
+			enabled=false
+			description= "resource test azure export updated"
+			plan_id= "3333"
+			cloud_provider= "azure"
+			azure {
+				location= "centralus-updated"
+				resource_group= "traffic-generator-updated"
+				storage_account= "kentikstorage-updated"
+				subscription_id= "8888"
+				security_principal_enabled=false
+			}
+		  }
+		`,
+		apiURL,
+	)
 }
 
-resource "kentik-cloudexport_item" "test_azure" {
-	name= "resource_test_terraform_azure_export_updated"
-	type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
-	enabled=false
-	description= "resource test azure export updated"
-	plan_id= "3333"
-	cloud_provider= "azure"
-	azure {
-		location= "centralus-updated"
-		resource_group= "traffic-generator-updated"
-		storage_account= "kentikstorage-updated"
-		subscription_id= "8888"
-		security_principal_enabled=false
-	}
-  }
-`
-
-const testAccResourceCloudExportCreateBGP = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
+func makeTestAccResourceCloudExportDestroy(apiURL string) string {
+	return fmt.Sprintf(`
+		provider "kentik-cloudexport" {
+			apiurl = "%v"
+			email = "joe.doe@example.com"
+			token = "dummy-token"
+		}
+		`, apiURL,
+	)
 }
-
-resource "kentik-cloudexport_item" "test_bgp" {
-	name= "resource_test_terraform_bgp_export"
-	type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
-	enabled=true
-	description= "resource test bgp export"
-	plan_id= "9948"
-	cloud_provider= "bgp"
-	bgp {
-		apply_bgp= true
-		use_bgp_device_id= "1324"
-		device_bgp_type= "router"
-	}
-  }
-`
-
-const testAccResourceCloudExportUpdateBGP = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
-}
-
-resource "kentik-cloudexport_item" "test_bgp" {
-	name= "resource_test_terraform_bgp_export_updated"
-	type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
-	enabled=false
-	description= "resource test bgp export updated"
-	plan_id= "3333"
-	cloud_provider= "bgp"
-	bgp {
-		apply_bgp= false
-		use_bgp_device_id= "4444"
-		device_bgp_type= "dns"
-	}
-  }
-`
-
-const testAccResourceCloudExportDestroy = `
-provider "kentik-cloudexport" {
-	# apiurl = "http://localhost:8080" # KTAPI_URL env variable used instead
-}
-`

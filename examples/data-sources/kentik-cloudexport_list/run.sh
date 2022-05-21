@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The script applies the example Terraform configuration.
-# The provider uses stub Kentik API server by default.
+# By default, the provider uses the server on localhost:9955. The server address can be changed with
+# TEST_API_SERVER_ENDPOINT environment variable.
 # Production Kentik API server can be used by passing "production" positional argument to the script.
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
