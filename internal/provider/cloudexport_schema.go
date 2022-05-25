@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/kentik/community_sdk_golang/kentikapi/models"
 )
 
@@ -25,6 +26,12 @@ func makeCloudExportSchema(mode schemaMode) map[string]*schema.Schema {
 				"CLOUD_EXPORT_TYPE_KENTIK_MANAGED: Cloud exports that are managed by Kentik. " +
 				"CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED: Exports that are managed by Kentik customers " +
 				"(eg. by running an agent)",
+			ValidateDiagFunc: skipOnReadDiagFunc(mode, validation.ToDiagFunc(validation.StringInSlice(
+				[]string{
+					models.CloudExportTypeUnspecified,
+					models.CloudExportTypeKentikManaged,
+					models.CloudExportTypeCustomerManaged,
+				}, false))),
 		},
 		"enabled": {
 			Type:        schema.TypeBool,
@@ -55,6 +62,13 @@ func makeCloudExportSchema(mode schemaMode) map[string]*schema.Schema {
 			Computed:    mode == readSingle || mode == readList, // provided by server on read
 			Required:    mode == create,                         // provided by user on create
 			Description: "The cloud provider targeted by this export (aws, azure, gce, ibm)",
+			ValidateDiagFunc: skipOnReadDiagFunc(mode, validation.ToDiagFunc(validation.StringInSlice(
+				[]string{
+					models.CloudProviderAWS,
+					models.CloudProviderAzure,
+					models.CloudProviderGCE,
+					models.CloudProviderIBM,
+				}, false))),
 		},
 		"aws":            makeAWSSchema(mode),
 		"azure":          makeAzureSchema(mode),
@@ -72,6 +86,12 @@ func makeAWSSchema(mode schemaMode) *schema.Schema {
 		Computed:    mode == readSingle || mode == readList, // provided by server on read
 		Optional:    mode == create,                         // optionally provided by user on create
 		Description: "Properties specific to Amazon Web Services \"vpc flow logs\" exports",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{
+			models.CloudProviderAWS,
+			models.CloudProviderAzure,
+			models.CloudProviderGCE,
+			models.CloudProviderIBM,
+		}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"bucket": {
@@ -115,6 +135,12 @@ func makeAzureSchema(mode schemaMode) *schema.Schema {
 		Computed:    mode == readSingle || mode == readList, // provided by server on read
 		Optional:    mode == create,                         // optionally provided by user on create
 		Description: "Properties specific to Azure exports",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{
+			models.CloudProviderAWS,
+			models.CloudProviderAzure,
+			models.CloudProviderGCE,
+			models.CloudProviderIBM,
+		}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"location": {
@@ -186,6 +212,12 @@ func makeGCESchema(mode schemaMode) *schema.Schema {
 		Computed:    mode == readSingle || mode == readList, // provided by server on read
 		Optional:    mode == create,                         // optionally provided by user on create
 		Description: "Properties specific to Google Cloud export",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{
+			models.CloudProviderAWS,
+			models.CloudProviderAzure,
+			models.CloudProviderGCE,
+			models.CloudProviderIBM,
+		}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"project": {
@@ -210,6 +242,12 @@ func makeIBMSchema(mode schemaMode) *schema.Schema {
 		Computed:    mode == readSingle || mode == readList, // provided by server on read
 		Optional:    mode == create,                         // optionally provided by user on create
 		Description: "Properties specific to IBM Cloud exports",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{
+			models.CloudProviderAWS,
+			models.CloudProviderAzure,
+			models.CloudProviderGCE,
+			models.CloudProviderIBM,
+		}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"bucket": {
