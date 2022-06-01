@@ -33,4 +33,7 @@ lint:
 test:
 	go test ./... -timeout=5m
 
+acceptance:
+	TF_ACC=1 go test ./... -timeout=5m
+
 .PHONY: build check-docs docs fmt install lint test
