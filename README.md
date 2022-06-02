@@ -20,6 +20,7 @@ Development steps:
 - Build the provider: `make build`
 - Build and install the provider locally: `make install`
 - Run tests: `make test`
+- Run acceptance tests: `make acceptance`
 - Run golangci-lint: `make lint`
 - Format the code: `make fmt`
 - Generate the documentation: `make docs`
@@ -34,6 +35,16 @@ This allows to:
 - avoid the necessity of providing valid API credentials
 - avoid creating resources on remote server
 - make the test results more reliable
+
+### Acceptance Tests
+
+Acceptance tests run the provider against production server.
+To run it locally, you need to set your login credentials as environment variables as below.
+
+```bash
+export KTAPI_AUTH_EMAIL=<Kentik API authentication email>
+export KTAPI_AUTH_TOKEN=<Kentik API authentication token>
+```
 
 ### Debug
 
