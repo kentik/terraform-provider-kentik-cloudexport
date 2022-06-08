@@ -1,8 +1,18 @@
 name: Acceptance Tests
 
 on:
-  schedule:
-    - cron:  "0 3 * * 2"
+#  schedule:
+#    - cron:  "*/20 * * * *"
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - 'templates/**'
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - 'templates/**'
 
 jobs:
   acceptance:
@@ -26,6 +36,7 @@ jobs:
       - name: Run tests
         env:
           TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
-          KTAPI_AUTH_EMAIL: ${{ secrets.TEST_KTAPI_AUTH_EMAIL }}
-          KTAPI_AUTH_TOKEN: ${{ secrets.TEST_KTAPI_AUTH_TOKEN }}
+          KTAPI_AUTH_EMAIL: ${{ secrets.KTAPI_AUTH_EMAIL }}
+          KTAPI_AUTH_TOKEN: ${{ secrets.KTAPI_AUTH_TOKEN }}
+          KTAPI_URL: ${{ secrets.KTAPI_URL }}
         run: make acceptance

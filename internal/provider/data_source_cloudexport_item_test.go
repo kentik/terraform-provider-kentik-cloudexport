@@ -207,7 +207,7 @@ func TestAccDataSourceCloudExportItemAWS(t *testing.T) {
 					resource.TestCheckResourceAttr(ceAWSDS, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAWSDS, "name", "acc_test_terraform_aws_export"),
 					resource.TestCheckResourceAttr(ceAWSDS, "description", "terraform aws cloud export"),
-					resource.TestCheckResourceAttr(ceAWSDS, "plan_id", "11467"),
+					resource.TestCheckResourceAttr(ceAWSDS, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceAWSDS, "cloud_provider", "aws"),
 					resource.TestCheckResourceAttr(ceAWSDS, "bgp.0.apply_bgp", "true"),
 					resource.TestCheckResourceAttr(ceAWSDS, "bgp.0.use_bgp_device_id", "dummy-device-id"),
@@ -240,7 +240,7 @@ func TestAccDataSourceCloudExportItemGCE(t *testing.T) {
 					resource.TestCheckResourceAttr(ceGCPDS, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceGCPDS, "name", "acc_test_terraform_gce_export"),
 					resource.TestCheckResourceAttr(ceGCPDS, "description", "terraform gce cloud export"),
-					resource.TestCheckResourceAttr(ceGCPDS, "plan_id", "21600"),
+					resource.TestCheckResourceAttr(ceGCPDS, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceGCPDS, "cloud_provider", "gce"),
 					resource.TestCheckResourceAttr(ceGCPDS, "gce.0.project", "project gce"),
 					resource.TestCheckResourceAttr(ceGCPDS, "gce.0.subscription", "subscription gce"),
@@ -270,7 +270,7 @@ func TestAccDataSourceCloudExportItemIBM(t *testing.T) {
 					resource.TestCheckResourceAttr(ceIBMDS, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceIBMDS, "name", "acc_test_terraform_ibm_export"),
 					resource.TestCheckResourceAttr(ceIBMDS, "description", "terraform ibm cloud export"),
-					resource.TestCheckResourceAttr(ceIBMDS, "plan_id", "11467"),
+					resource.TestCheckResourceAttr(ceIBMDS, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceIBMDS, "cloud_provider", "ibm"),
 					resource.TestCheckResourceAttr(ceIBMDS, "ibm.0.bucket", "terraform-ibm-bucket"),
 					resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.apply_bgp", "true"),
@@ -299,7 +299,7 @@ func TestAccDataSourceCloudExportItemAzure(t *testing.T) {
 					resource.TestCheckResourceAttr(ceAzureDS, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAzureDS, "name", "acc_test_terraform_azure_export"),
 					resource.TestCheckResourceAttr(ceAzureDS, "description", "terraform azure cloud export"),
-					resource.TestCheckResourceAttr(ceAzureDS, "plan_id", "11467"),
+					resource.TestCheckResourceAttr(ceAzureDS, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceAzureDS, "cloud_provider", "azure"),
 					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.location", "centralus"),
 					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.resource_group", "traffic-generator"),
@@ -339,7 +339,7 @@ func createTestAccCloudExportItemAWS() (*models.CloudExport, error) {
 	}
 	ce := models.NewAWSCloudExport(models.CloudExportAWSRequiredFields{
 		Name:   "acc_test_terraform_aws_export",
-		PlanID: "11467",
+		PlanID: "7512",
 		AWSProperties: models.AWSPropertiesRequiredFields{
 			Bucket: "terraform-aws-bucket",
 		},
@@ -375,7 +375,7 @@ func createTestAccCloudExportItemGCE() (*models.CloudExport, error) {
 	}
 	ce := models.NewGCECloudExport(models.CloudExportGCERequiredFields{
 		Name:   "acc_test_terraform_gce_export",
-		PlanID: "21600",
+		PlanID: "7512",
 		GCEProperties: models.GCEPropertiesRequiredFields{
 			Project:      "project gce",
 			Subscription: "subscription gce",
@@ -408,7 +408,7 @@ func createTestAccCloudExportItemIBM() (*models.CloudExport, error) {
 	}
 	ce := models.NewIBMCloudExport(models.CloudExportIBMRequiredFields{
 		Name:   "acc_test_terraform_ibm_export",
-		PlanID: "11467",
+		PlanID: "7512",
 		IBMProperties: models.IBMPropertiesRequiredFields{
 			Bucket: "terraform-ibm-bucket",
 		},
@@ -440,7 +440,7 @@ func createTestAccCloudExportItemAzure() (*models.CloudExport, error) {
 	}
 	ce := models.NewAzureCloudExport(models.CloudExportAzureRequiredFields{
 		Name:   "acc_test_terraform_azure_export",
-		PlanID: "11467",
+		PlanID: "7512",
 		AzureProperties: models.AzurePropertiesRequiredFields{
 			Location:       "centralus",
 			ResourceGroup:  "traffic-generator",

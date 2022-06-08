@@ -486,7 +486,7 @@ func TestAccResourceCloudExportAWS(t *testing.T) {
 					resource.TestCheckResourceAttr(ceAWSResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAWSResource, "name", "resource_test_terraform_aws_export"),
 					resource.TestCheckResourceAttr(ceAWSResource, "description", "resource test aws export"),
-					resource.TestCheckResourceAttr(ceAWSResource, "plan_id", "9948"),
+					resource.TestCheckResourceAttr(ceAWSResource, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceAWSResource, "cloud_provider", "aws"),
 					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.apply_bgp", "true"),
 					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.use_bgp_device_id", "1234"),
@@ -508,7 +508,6 @@ func TestAccResourceCloudExportAWS(t *testing.T) {
 					resource.TestCheckResourceAttr(ceAWSResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAWSResource, "name", "resource_test_terraform_aws_export_updated"),
 					resource.TestCheckResourceAttr(ceAWSResource, "description", "resource test aws export updated"),
-					resource.TestCheckResourceAttr(ceAWSResource, "plan_id", "3333"),
 					resource.TestCheckResourceAttr(ceAWSResource, "cloud_provider", "aws"),
 					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.apply_bgp", "false"),
 					resource.TestCheckResourceAttr(ceAWSResource, "bgp.0.use_bgp_device_id", "4444"),
@@ -540,7 +539,7 @@ func TestAccResourceCloudExportGCE(t *testing.T) {
 					resource.TestCheckResourceAttr(ceGCEResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceGCEResource, "name", "resource_test_terraform_gce_export"),
 					resource.TestCheckResourceAttr(ceGCEResource, "description", "resource test gce export"),
-					resource.TestCheckResourceAttr(ceGCEResource, "plan_id", "9948"),
+					resource.TestCheckResourceAttr(ceGCEResource, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceGCEResource, "cloud_provider", "gce"),
 					resource.TestCheckResourceAttr(ceGCEResource, "gce.0.project", "gce project"),
 					resource.TestCheckResourceAttr(ceGCEResource, "gce.0.subscription", "gce subscription"),
@@ -554,7 +553,6 @@ func TestAccResourceCloudExportGCE(t *testing.T) {
 					resource.TestCheckResourceAttr(ceGCEResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceGCEResource, "name", "resource_test_terraform_gce_export_updated"),
 					resource.TestCheckResourceAttr(ceGCEResource, "description", "resource test gce export updated"),
-					resource.TestCheckResourceAttr(ceGCEResource, "plan_id", "3333"),
 					resource.TestCheckResourceAttr(ceGCEResource, "cloud_provider", "gce"),
 					resource.TestCheckResourceAttr(ceGCEResource, "gce.0.project", "gce project updated"),
 					resource.TestCheckResourceAttr(ceGCEResource, "gce.0.subscription", "gce subscription updated"),
@@ -576,7 +574,7 @@ func TestAccResourceCloudExportIBM(t *testing.T) {
 					resource.TestCheckResourceAttr(ceIBMResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceIBMResource, "name", "resource_test_terraform_ibm_export"),
 					resource.TestCheckResourceAttr(ceIBMResource, "description", "resource test ibm export"),
-					resource.TestCheckResourceAttr(ceIBMResource, "plan_id", "9948"),
+					resource.TestCheckResourceAttr(ceIBMResource, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceIBMResource, "cloud_provider", "ibm"),
 					resource.TestCheckResourceAttr(ceIBMResource, "ibm.0.bucket", "ibm-bucket"),
 				),
@@ -589,7 +587,6 @@ func TestAccResourceCloudExportIBM(t *testing.T) {
 					resource.TestCheckResourceAttr(ceIBMResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceIBMResource, "name", "resource_test_terraform_ibm_export_updated"),
 					resource.TestCheckResourceAttr(ceIBMResource, "description", "resource test ibm export updated"),
-					resource.TestCheckResourceAttr(ceIBMResource, "plan_id", "3333"),
 					resource.TestCheckResourceAttr(ceIBMResource, "cloud_provider", "ibm"),
 					resource.TestCheckResourceAttr(ceIBMResource, "ibm.0.bucket", "ibm-bucket-updated"),
 				),
@@ -610,7 +607,7 @@ func TestAccResourceCloudExportAzure(t *testing.T) {
 					resource.TestCheckResourceAttr(ceAzureResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAzureResource, "name", "resource_test_terraform_azure_export"),
 					resource.TestCheckResourceAttr(ceAzureResource, "description", "resource test azure export"),
-					resource.TestCheckResourceAttr(ceAzureResource, "plan_id", "9948"),
+					resource.TestCheckResourceAttr(ceAzureResource, "plan_id", "7512"),
 					resource.TestCheckResourceAttr(ceAzureResource, "cloud_provider", "azure"),
 					resource.TestCheckResourceAttr(ceAzureResource, "azure.0.location", "centralus"),
 					resource.TestCheckResourceAttr(ceAzureResource, "azure.0.resource_group", "traffic-generator"),
@@ -627,7 +624,6 @@ func TestAccResourceCloudExportAzure(t *testing.T) {
 					resource.TestCheckResourceAttr(ceAzureResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(ceAzureResource, "name", "resource_test_terraform_azure_export_updated"),
 					resource.TestCheckResourceAttr(ceAzureResource, "description", "resource test azure export updated"),
-					resource.TestCheckResourceAttr(ceAzureResource, "plan_id", "3333"),
 					resource.TestCheckResourceAttr(ceAzureResource, "cloud_provider", "azure"),
 					resource.TestCheckResourceAttr(ceAzureResource, "azure.0.location", "centralus-updated"),
 					resource.TestCheckResourceAttr(ceAzureResource, "azure.0.resource_group", "traffic-generator-updated"),
@@ -647,7 +643,7 @@ func makeTestAccResourceCloudExportCreateAWS() string {
 			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
 			enabled=true
 			description= "resource test aws export"
-			plan_id= "9948"
+			plan_id= "7512"
 			cloud_provider= "aws"
 			bgp {
 				apply_bgp= true
@@ -672,7 +668,7 @@ func makeTestAccResourceCloudExportUpdateAWS() string {
 			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
 			enabled=true
 			description= "resource test aws export updated"
-			plan_id= "3333"
+			plan_id= "7512"
 			cloud_provider= "aws"
 			bgp {
 				apply_bgp= false
@@ -697,7 +693,7 @@ func makeTestAccResourceCloudExportCreateGCE() string {
 			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
 			enabled=true
 			description= "resource test gce export"
-			plan_id= "9948"
+			plan_id= "7512"
 			cloud_provider= "gce"
 			gce {
 				project= "gce project"
@@ -714,7 +710,7 @@ func makeTestAccResourceCloudExportUpdateGCE() string {
 			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
 			enabled=true
 			description= "resource test gce export updated"
-			plan_id= "3333"
+			plan_id= "7512"
 			cloud_provider= "gce"
 			gce {
 				project= "gce project updated"
@@ -731,7 +727,7 @@ func makeTestAccResourceCloudExportCreateIBM() string {
 			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
 			enabled=true
 			description= "resource test ibm export"
-			plan_id= "9948"
+			plan_id= "7512"
 			cloud_provider= "ibm"
 			ibm {
 				bucket= "ibm-bucket"
@@ -747,7 +743,7 @@ func makeTestAccResourceCloudExportUpdateIBM() string {
 			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
 			enabled=true
 			description= "resource test ibm export updated"
-			plan_id= "3333"
+			plan_id= "7512"
 			cloud_provider= "ibm"
 			ibm {
 				bucket= "ibm-bucket-updated"
@@ -763,7 +759,7 @@ func makeTestAccResourceCloudExportCreateAzure() string {
 			type= "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"
 			enabled=true
 			description= "resource test azure export"
-			plan_id= "9948"
+			plan_id= "7512"
 			cloud_provider= "azure"
 			azure {
 				location= "centralus"
@@ -783,7 +779,7 @@ func makeTestAccResourceCloudExportUpdateAzure() string {
 			type= "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"
 			enabled=true
 			description= "resource test azure export updated"
-			plan_id= "3333"
+			plan_id= "7512"
 			cloud_provider= "azure"
 			azure {
 				location= "centralus-updated"

@@ -96,7 +96,7 @@ func createTestAccCloudExportList() ([]*models.CloudExport, error) {
 	}
 	ceAWS := models.NewAWSCloudExport(models.CloudExportAWSRequiredFields{
 		Name:   "acc_test_terraform_aws_export_list",
-		PlanID: "11467",
+		PlanID: "7512",
 		AWSProperties: models.AWSPropertiesRequiredFields{
 			Bucket: "terraform-aws-bucket",
 		},
@@ -114,7 +114,7 @@ func createTestAccCloudExportList() ([]*models.CloudExport, error) {
 
 	ceGCE := models.NewGCECloudExport(models.CloudExportGCERequiredFields{
 		Name:   "acc_test_terraform_gce_export_list",
-		PlanID: "21600",
+		PlanID: "7512",
 		GCEProperties: models.GCEPropertiesRequiredFields{
 			Project:      "project gce",
 			Subscription: "subscription gce",
