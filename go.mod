@@ -4,11 +4,11 @@ go 1.17
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.9.0
-	github.com/hashicorp/terraform-plugin-log v0.4.0
+	github.com/hashicorp/terraform-plugin-log v0.4.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
 	github.com/kentik/api-schema-public v0.0.0-20220322181339-896729e59945
 	github.com/kentik/community_sdk_golang v0.2.1-0.20220407113303-5f9f1d75a145
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 	mvdan.cc/gofumpt v0.3.1
@@ -37,7 +37,7 @@ require (
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
-	github.com/hashicorp/go-hclog v1.2.0 // indirect
+	github.com/hashicorp/go-hclog v1.2.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.4.4 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
@@ -81,5 +81,5 @@ require (
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
