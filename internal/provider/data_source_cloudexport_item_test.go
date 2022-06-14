@@ -539,6 +539,12 @@ func newClient() (*kentikapi.Client, error) {
 	authEmail, _ := os.LookupEnv("KTAPI_AUTH_EMAIL")
 	authToken, _ := os.LookupEnv("KTAPI_AUTH_TOKEN")
 	apiURL, _ := os.LookupEnv("KTAPI_URL")
+	if authEmail == "" {
+		return nil, fmt.Errorf("authEmail variable is empty")
+	}
+	if authToken == "" {
+		return nil, fmt.Errorf("authToken variable is empty")
+	}
 	client, err := kentikapi.NewClient(kentikapi.Config{
 		APIURL:      apiURL,
 		AuthEmail:   authEmail,
