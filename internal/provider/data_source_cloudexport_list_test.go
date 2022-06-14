@@ -3,7 +3,6 @@ package provider_test
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/AlekSi/pointer"
@@ -55,27 +54,24 @@ func makeTestCloudExportDataSourceList(apiURL string) string {
 }
 
 func TestAccDataSourceCloudExportList(t *testing.T) {
-	exports, err := createTestAccCloudExportList()
-	assert.NoError(t, err)
-	defer func() {
-		for _, ce := range exports {
-			assert.NoError(t, deleteTestAccCloudExportItem(ce))
-		}
-	}()
+	if skipIfNotAcceptance() {
+		checkRequiredEnvVariables(t)
+		assert.NoError(t, createTestAccCloudExportList())
 
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: providerFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: makeTestAccCloudExportDataSourceList(),
-				Check: resource.ComposeTestCheckFunc(
-					// more properties are verified in TestAccDataSourceCloudExportItem* tests
-					resource.TestCheckResourceAttrSet(exportsDS, "items.0.name"),
-					resource.TestCheckResourceAttrSet(exportsDS, "items.1.name"),
-				),
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: providerFactories(),
+			Steps: []resource.TestStep{
+				{
+					Config: makeTestAccCloudExportDataSourceList(),
+					Check: resource.ComposeTestCheckFunc(
+						// more properties are verified in TestAccDataSourceCloudExportItem* tests
+						resource.TestCheckResourceAttrSet(exportsDS, "items.0.name"),
+						resource.TestCheckResourceAttrSet(exportsDS, "items.1.name"),
+					),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func makeTestAccCloudExportDataSourceList() string {
@@ -84,48 +80,44 @@ func makeTestAccCloudExportDataSourceList() string {
 	`
 }
 
-func createTestAccCloudExportList() ([]*models.CloudExport, error) {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return nil, nil
-	}
+func createTestAccCloudExportList() error {
 	ctx := context.Background()
 	client, err := newClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	ceAWS := models.NewAWSCloudExport(models.CloudExportAWSRequiredFields{
-		Name:   "acc_test_terraform_aws_export_list",
-		PlanID: "7512",
+		Name:   fmt.Sprintf("%s-aws-export-list", getAccTestPrefix()),
+		PlanID: getKentikPlanIDAccTests(),
 		AWSProperties: models.AWSPropertiesRequiredFields{
-			Bucket: "terraform-aws-bucket",
+			Bucket: fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix()),
 		},
 	})
 	ceAWS.Type = models.CloudExportTypeKentikManaged
-	ceAWS.Description = "terraform aws cloud export"
-	ceAWS.GetAWSProperties().IAMRoleARN = "dummy-iam-role-arn"
+	ceAWS.Description = fmt.Sprintf("%s-description", getAccTestPrefix())
+	ceAWS.GetAWSProperties().IAMRoleARN = fmt.Sprintf("%s-iam-role-arn", getAccTestPrefix())
 	ceAWS.GetAWSProperties().Region = "us-east-2"
 	ceAWS.GetAWSProperties().DeleteAfterRead = pointer.ToBool(true)
 	ceAWS.GetAWSProperties().MultipleBuckets = pointer.ToBool(true)
-	ceAWS, err = client.CloudExports.Create(ctx, ceAWS)
+	_, err = client.CloudExports.Create(ctx, ceAWS)
 	if err != nil {
-		return nil, fmt.Errorf("client.CloudExports.Create: %w", err)
+		return fmt.Errorf("client.CloudExports.Create: %w", err)
 	}
 
 	ceGCE := models.NewGCECloudExport(models.CloudExportGCERequiredFields{
-		Name:   "acc_test_terraform_gce_export_list",
-		PlanID: "7512",
+		Name:   fmt.Sprintf("%s-gce-export-list", getAccTestPrefix()),
+		PlanID: getKentikPlanIDAccTests(),
 		GCEProperties: models.GCEPropertiesRequiredFields{
 			Project:      "project gce",
-			Subscription: "subscription gce",
+			Subscription: fmt.Sprintf("%s-subscription gce", getAccTestPrefix()),
 		},
 	})
 	ceGCE.Type = models.CloudExportTypeCustomerManaged
-	ceGCE.Description = "terraform gce cloud export"
-	ceGCE, err = client.CloudExports.Create(ctx, ceGCE)
+	ceGCE.Description = fmt.Sprintf("%s-description", getAccTestPrefix())
+	_, err = client.CloudExports.Create(ctx, ceGCE)
 	if err != nil {
-		return nil, fmt.Errorf("client.CloudExports.Create: %w", err)
+		return fmt.Errorf("client.CloudExports.Create: %w", err)
 	}
 
-	return []*models.CloudExport{ceAWS, ceGCE}, nil
+	return nil
 }

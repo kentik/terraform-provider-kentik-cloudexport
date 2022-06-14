@@ -3,7 +3,9 @@ package provider_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/AlekSi/pointer"
@@ -11,6 +13,7 @@ import (
 	"github.com/kentik/community_sdk_golang/kentikapi"
 	"github.com/kentik/community_sdk_golang/kentikapi/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -19,6 +22,35 @@ const (
 	ceGCPDS   = "data.kentik-cloudexport_item.gce"
 	ceIBMDS   = "data.kentik-cloudexport_item.ibm"
 )
+
+//nolint: gochecknoinits
+func init() {
+	resource.AddTestSweepers("kentik_tf_integ_test", &resource.Sweeper{
+		Name: "kentik_tf_integ_test",
+		F: func(region string) error {
+			ctx := context.Background()
+			client, err := newClient()
+			if err != nil {
+				return fmt.Errorf("error getting client: %s", err)
+			}
+
+			getAll, err := client.CloudExports.GetAll(ctx)
+			if err != nil {
+				return fmt.Errorf("error getting CloudExports: %s", err)
+			}
+
+			for _, ce := range getAll.CloudExports {
+				if strings.HasPrefix(ce.Name, getAccTestPrefix()) {
+					err := client.CloudExports.Delete(ctx, ce.ID)
+					if err != nil {
+						log.Printf("Error destroying %s during sweep: %s", ce.Name, err)
+					}
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestDataSourceCloudExportItemAWS(t *testing.T) {
 	t.Parallel()
@@ -191,133 +223,185 @@ func makeTestCloudExportDataSourceItems(apiURL string) string {
 }
 
 func TestAccDataSourceCloudExportItemAWS(t *testing.T) {
-	ce, err := createTestAccCloudExportItemAWS()
-	assert.NoError(t, err)
-	defer func() {
-		assert.NoError(t, deleteTestAccCloudExportItem(ce))
-	}()
+	if skipIfNotAcceptance() {
+		checkRequiredEnvVariables(t)
+		ce, err := createTestAccCloudExportItemAWS()
+		assert.NoError(t, err)
 
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: providerFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderAWS, ce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(ceAWSDS, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
-					resource.TestCheckResourceAttr(ceAWSDS, "enabled", "true"),
-					resource.TestCheckResourceAttr(ceAWSDS, "name", "acc_test_terraform_aws_export"),
-					resource.TestCheckResourceAttr(ceAWSDS, "description", "terraform aws cloud export"),
-					resource.TestCheckResourceAttr(ceAWSDS, "plan_id", "7512"),
-					resource.TestCheckResourceAttr(ceAWSDS, "cloud_provider", "aws"),
-					resource.TestCheckResourceAttr(ceAWSDS, "bgp.0.apply_bgp", "true"),
-					resource.TestCheckResourceAttr(ceAWSDS, "bgp.0.use_bgp_device_id", "dummy-device-id"),
-					resource.TestCheckResourceAttr(ceAWSDS, "bgp.0.device_bgp_type", "dummy-device-bgp-type"),
-					resource.TestCheckResourceAttr(ceAWSDS, "aws.0.bucket", "terraform-aws-bucket"),
-					resource.TestCheckResourceAttr(ceAWSDS, "aws.0.iam_role_arn", "dummy-iam-role-arn"),
-					resource.TestCheckResourceAttr(ceAWSDS, "aws.0.region", "us-east-2"),
-					resource.TestCheckResourceAttr(ceAWSDS, "aws.0.delete_after_read", "true"),
-					resource.TestCheckResourceAttr(ceAWSDS, "aws.0.multiple_buckets", "true"),
-				),
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: providerFactories(),
+			Steps: []resource.TestStep{
+				{
+					Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderAWS, ce),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ceAWSDS, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
+						resource.TestCheckResourceAttr(ceAWSDS, "enabled", "true"),
+						resource.TestCheckResourceAttr(ceAWSDS, "name", fmt.Sprintf("%s-aws-export-item", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAWSDS, "description", fmt.Sprintf("%s-description-aws", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAWSDS, "plan_id", getKentikPlanIDAccTests()),
+						resource.TestCheckResourceAttr(ceAWSDS, "cloud_provider", "aws"),
+						resource.TestCheckResourceAttr(ceAWSDS, "bgp.0.apply_bgp", "true"),
+						resource.TestCheckResourceAttr(
+							ceAWSDS,
+							"bgp.0.use_bgp_device_id",
+							fmt.Sprintf("%s-device-id", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(
+							ceAWSDS,
+							"bgp.0.device_bgp_type",
+							fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(
+							ceAWSDS,
+							"aws.0.bucket",
+							fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.iam_role_arn", fmt.Sprintf("%s-iam-role-arn", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.region", "us-east-2"),
+						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.delete_after_read", "true"),
+						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.multiple_buckets", "true"),
+					),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func TestAccDataSourceCloudExportItemGCE(t *testing.T) {
-	ce, err := createTestAccCloudExportItemGCE()
-	assert.NoError(t, err)
-	defer func() {
-		assert.NoError(t, deleteTestAccCloudExportItem(ce))
-	}()
+	if skipIfNotAcceptance() {
+		checkRequiredEnvVariables(t)
+		ce, err := createTestAccCloudExportItemGCE()
+		assert.NoError(t, err)
 
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: providerFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderGCE, ce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(ceGCPDS, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
-					resource.TestCheckResourceAttr(ceGCPDS, "enabled", "true"),
-					resource.TestCheckResourceAttr(ceGCPDS, "name", "acc_test_terraform_gce_export"),
-					resource.TestCheckResourceAttr(ceGCPDS, "description", "terraform gce cloud export"),
-					resource.TestCheckResourceAttr(ceGCPDS, "plan_id", "7512"),
-					resource.TestCheckResourceAttr(ceGCPDS, "cloud_provider", "gce"),
-					resource.TestCheckResourceAttr(ceGCPDS, "gce.0.project", "project gce"),
-					resource.TestCheckResourceAttr(ceGCPDS, "gce.0.subscription", "subscription gce"),
-					resource.TestCheckResourceAttr(ceGCPDS, "bgp.0.apply_bgp", "true"),
-					resource.TestCheckResourceAttr(ceGCPDS, "bgp.0.use_bgp_device_id", "dummy-device-id"),
-					resource.TestCheckResourceAttr(ceGCPDS, "bgp.0.device_bgp_type", "dummy-device-bgp-type"),
-				),
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: providerFactories(),
+			Steps: []resource.TestStep{
+				{
+					Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderGCE, ce),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ceGCPDS, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
+						resource.TestCheckResourceAttr(ceGCPDS, "enabled", "true"),
+						resource.TestCheckResourceAttr(ceGCPDS, "name", fmt.Sprintf("%s-gce-export-item", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceGCPDS, "description", fmt.Sprintf("%s-description-gce", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceGCPDS, "plan_id", getKentikPlanIDAccTests()),
+						resource.TestCheckResourceAttr(ceGCPDS, "cloud_provider", "gce"),
+						resource.TestCheckResourceAttr(
+							ceGCPDS,
+							"gce.0.project",
+							fmt.Sprintf("%s-gce-export-list-project gce", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(
+							ceGCPDS,
+							"gce.0.subscription",
+							fmt.Sprintf("%s-subscription gce", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(
+							ceGCPDS,
+							"bgp.0.apply_bgp",
+							"true"),
+						resource.TestCheckResourceAttr(
+							ceGCPDS,
+							"bgp.0.use_bgp_device_id",
+							fmt.Sprintf("%s-device-id", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(
+							ceGCPDS,
+							"bgp.0.device_bgp_type",
+							fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix())),
+					),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func TestAccDataSourceCloudExportItemIBM(t *testing.T) {
-	ce, err := createTestAccCloudExportItemIBM()
-	assert.NoError(t, err)
-	defer func() {
-		assert.NoError(t, deleteTestAccCloudExportItem(ce))
-	}()
+	if skipIfNotAcceptance() {
+		checkRequiredEnvVariables(t)
+		ce, err := createTestAccCloudExportItemIBM()
+		assert.NoError(t, err)
 
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: providerFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderIBM, ce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(ceIBMDS, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
-					resource.TestCheckResourceAttr(ceIBMDS, "enabled", "true"),
-					resource.TestCheckResourceAttr(ceIBMDS, "name", "acc_test_terraform_ibm_export"),
-					resource.TestCheckResourceAttr(ceIBMDS, "description", "terraform ibm cloud export"),
-					resource.TestCheckResourceAttr(ceIBMDS, "plan_id", "7512"),
-					resource.TestCheckResourceAttr(ceIBMDS, "cloud_provider", "ibm"),
-					resource.TestCheckResourceAttr(ceIBMDS, "ibm.0.bucket", "terraform-ibm-bucket"),
-					resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.apply_bgp", "true"),
-					resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.use_bgp_device_id", "dummy-device-id"),
-					resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.device_bgp_type", "dummy-device-bgp-type"),
-				),
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: providerFactories(),
+			Steps: []resource.TestStep{
+				{
+					Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderIBM, ce),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ceIBMDS, "type", "CLOUD_EXPORT_TYPE_KENTIK_MANAGED"),
+						resource.TestCheckResourceAttr(ceIBMDS, "enabled", "true"),
+						resource.TestCheckResourceAttr(ceIBMDS, "name", fmt.Sprintf("%s-ibm-export-item", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceIBMDS, "description", fmt.Sprintf("%s-description-ibm", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceIBMDS, "plan_id", getKentikPlanIDAccTests()),
+						resource.TestCheckResourceAttr(ceIBMDS, "cloud_provider", "ibm"),
+						resource.TestCheckResourceAttr(
+							ceIBMDS,
+							"ibm.0.bucket",
+							fmt.Sprintf("%s-terraform-ibm-bucket", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.apply_bgp", "true"),
+						resource.TestCheckResourceAttr(
+							ceIBMDS,
+							"bgp.0.use_bgp_device_id",
+							fmt.Sprintf("%s-device-id", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(
+							ceIBMDS,
+							"bgp.0.device_bgp_type",
+							fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix())),
+					),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func TestAccDataSourceCloudExportItemAzure(t *testing.T) {
-	ce, err := createTestAccCloudExportItemAzure()
-	assert.NoError(t, err)
-	defer func() {
-		assert.NoError(t, deleteTestAccCloudExportItem(ce))
-	}()
+	if skipIfNotAcceptance() {
+		checkRequiredEnvVariables(t)
+		ce, err := createTestAccCloudExportItemAzure()
+		assert.NoError(t, err)
 
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: providerFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderAzure, ce),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(ceAzureDS, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
-					resource.TestCheckResourceAttr(ceAzureDS, "enabled", "true"),
-					resource.TestCheckResourceAttr(ceAzureDS, "name", "acc_test_terraform_azure_export"),
-					resource.TestCheckResourceAttr(ceAzureDS, "description", "terraform azure cloud export"),
-					resource.TestCheckResourceAttr(ceAzureDS, "plan_id", "7512"),
-					resource.TestCheckResourceAttr(ceAzureDS, "cloud_provider", "azure"),
-					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.location", "centralus"),
-					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.resource_group", "traffic-generator"),
-					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.storage_account", "dummy-sa"),
-					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.subscription_id", "dummy-sid"),
-					resource.TestCheckResourceAttr(ceAzureDS, "azure.0.security_principal_enabled", "true"),
-					resource.TestCheckNoResourceAttr(ceAzureDS, "bgp.0.apply_bgp"),
-				),
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: providerFactories(),
+			Steps: []resource.TestStep{
+				{
+					Config: makeTestAccCloudExportDataSourceItems(models.CloudProviderAzure, ce),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ceAzureDS, "type", "CLOUD_EXPORT_TYPE_CUSTOMER_MANAGED"),
+						resource.TestCheckResourceAttr(ceAzureDS, "enabled", "true"),
+						resource.TestCheckResourceAttr(ceAzureDS, "name", fmt.Sprintf("%s-azure-export-item", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAzureDS, "description", fmt.Sprintf("%s-description-azure", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAzureDS, "plan_id", getKentikPlanIDAccTests()),
+						resource.TestCheckResourceAttr(ceAzureDS, "cloud_provider", "azure"),
+						resource.TestCheckResourceAttr(ceAzureDS, "azure.0.location", "centralus"),
+						resource.TestCheckResourceAttr(
+							ceAzureDS,
+							"azure.0.resource_group",
+							fmt.Sprintf("%s-traffic-generator", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAzureDS, "azure.0.storage_account", fmt.Sprintf("%s-sa", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAzureDS, "azure.0.subscription_id", fmt.Sprintf("%s-sid", getAccTestPrefix())),
+						resource.TestCheckResourceAttr(ceAzureDS, "azure.0.security_principal_enabled", "true"),
+						resource.TestCheckNoResourceAttr(ceAzureDS, "bgp.0.apply_bgp"),
+					),
+				},
 			},
-		},
-	})
+		})
+	}
+}
+
+func skipIfNotAcceptance() bool {
+	_, accTest := os.LookupEnv(resource.EnvTfAcc)
+	return accTest
+}
+
+func getAccTestPrefix() string {
+	return fmt.Sprintf("kentik_tf_integ_test_%s", os.Getenv("TF_ACC_PREFIX"))
+}
+
+func checkRequiredEnvVariables(t *testing.T) {
+	_, ok := os.LookupEnv("KTAPI_AUTH_EMAIL")
+	require.True(t, ok, "KTAPI_AUTH_EMAIL env variable not set")
+	_, ok = os.LookupEnv("KTAPI_AUTH_TOKEN")
+	require.True(t, ok, "KTAPI_AUTH_TOKEN env variable not set")
+	_, ok = os.LookupEnv("KTAPI_URL")
+	require.True(t, ok, "KTAPI_URL env variable not set")
+	_, ok = os.LookupEnv("KENTIK_PLAN_ID")
+	require.True(t, ok, "KENTIK_PLAN_ID env variable not set")
 }
 
 func makeTestAccCloudExportDataSourceItems(provider string, ce *models.CloudExport) string {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return ""
-	}
 	return fmt.Sprintf(`
 		data "kentik-cloudexport_item" "%v" {
 			id = "%v"
@@ -328,33 +412,29 @@ func makeTestAccCloudExportDataSourceItems(provider string, ce *models.CloudExpo
 }
 
 func createTestAccCloudExportItemAWS() (*models.CloudExport, error) {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return nil, nil
-	}
 	ctx := context.Background()
 	client, err := newClient()
 	if err != nil {
 		return nil, err
 	}
 	ce := models.NewAWSCloudExport(models.CloudExportAWSRequiredFields{
-		Name:   "acc_test_terraform_aws_export",
-		PlanID: "7512",
+		Name:   fmt.Sprintf("%s-aws-export-item", getAccTestPrefix()),
+		PlanID: getKentikPlanIDAccTests(),
 		AWSProperties: models.AWSPropertiesRequiredFields{
-			Bucket: "terraform-aws-bucket",
+			Bucket: fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeKentikManaged
 	ce.Enabled = pointer.ToBool(true)
-	ce.Description = "terraform aws cloud export"
-	ce.GetAWSProperties().IAMRoleARN = "dummy-iam-role-arn"
+	ce.Description = fmt.Sprintf("%s-description-aws", getAccTestPrefix())
+	ce.GetAWSProperties().IAMRoleARN = fmt.Sprintf("%s-iam-role-arn", getAccTestPrefix())
 	ce.GetAWSProperties().Region = "us-east-2"
 	ce.GetAWSProperties().DeleteAfterRead = pointer.ToBool(true)
 	ce.GetAWSProperties().MultipleBuckets = pointer.ToBool(true)
 	ce.BGP = &models.BGPProperties{
 		ApplyBGP:       pointer.ToBool(true),
-		UseBGPDeviceID: "dummy-device-id",
-		DeviceBGPType:  "dummy-device-bgp-type",
+		UseBGPDeviceID: fmt.Sprintf("%s-device-id", getAccTestPrefix()),
+		DeviceBGPType:  fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix()),
 	}
 	ce, err = client.CloudExports.Create(ctx, ce)
 	if err != nil {
@@ -364,30 +444,26 @@ func createTestAccCloudExportItemAWS() (*models.CloudExport, error) {
 }
 
 func createTestAccCloudExportItemGCE() (*models.CloudExport, error) {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return nil, nil
-	}
 	ctx := context.Background()
 	client, err := newClient()
 	if err != nil {
 		return nil, err
 	}
 	ce := models.NewGCECloudExport(models.CloudExportGCERequiredFields{
-		Name:   "acc_test_terraform_gce_export",
-		PlanID: "7512",
+		Name:   fmt.Sprintf("%s-gce-export-item", getAccTestPrefix()),
+		PlanID: getKentikPlanIDAccTests(),
 		GCEProperties: models.GCEPropertiesRequiredFields{
-			Project:      "project gce",
-			Subscription: "subscription gce",
+			Project:      fmt.Sprintf("%s-gce-export-list-project gce", getAccTestPrefix()),
+			Subscription: fmt.Sprintf("%s-subscription gce", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeCustomerManaged
 	ce.Enabled = pointer.ToBool(true)
-	ce.Description = "terraform gce cloud export"
+	ce.Description = fmt.Sprintf("%s-description-gce", getAccTestPrefix())
 	ce.BGP = &models.BGPProperties{
 		ApplyBGP:       pointer.ToBool(true),
-		UseBGPDeviceID: "dummy-device-id",
-		DeviceBGPType:  "dummy-device-bgp-type",
+		UseBGPDeviceID: fmt.Sprintf("%s-device-id", getAccTestPrefix()),
+		DeviceBGPType:  fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix()),
 	}
 	ce, err = client.CloudExports.Create(ctx, ce)
 	if err != nil {
@@ -397,29 +473,25 @@ func createTestAccCloudExportItemGCE() (*models.CloudExport, error) {
 }
 
 func createTestAccCloudExportItemIBM() (*models.CloudExport, error) {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return nil, nil
-	}
 	ctx := context.Background()
 	client, err := newClient()
 	if err != nil {
 		return nil, err
 	}
 	ce := models.NewIBMCloudExport(models.CloudExportIBMRequiredFields{
-		Name:   "acc_test_terraform_ibm_export",
-		PlanID: "7512",
+		Name:   fmt.Sprintf("%s-ibm-export-item", getAccTestPrefix()),
+		PlanID: getKentikPlanIDAccTests(),
 		IBMProperties: models.IBMPropertiesRequiredFields{
-			Bucket: "terraform-ibm-bucket",
+			Bucket: fmt.Sprintf("%s-terraform-ibm-bucket", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeKentikManaged
 	ce.Enabled = pointer.ToBool(true)
-	ce.Description = "terraform ibm cloud export"
+	ce.Description = fmt.Sprintf("%s-description-ibm", getAccTestPrefix())
 	ce.BGP = &models.BGPProperties{
 		ApplyBGP:       pointer.ToBool(true),
-		UseBGPDeviceID: "dummy-device-id",
-		DeviceBGPType:  "dummy-device-bgp-type",
+		UseBGPDeviceID: fmt.Sprintf("%s-device-id", getAccTestPrefix()),
+		DeviceBGPType:  fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix()),
 	}
 	ce, err = client.CloudExports.Create(ctx, ce)
 	if err != nil {
@@ -429,28 +501,24 @@ func createTestAccCloudExportItemIBM() (*models.CloudExport, error) {
 }
 
 func createTestAccCloudExportItemAzure() (*models.CloudExport, error) {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return nil, nil
-	}
 	ctx := context.Background()
 	client, err := newClient()
 	if err != nil {
 		return nil, err
 	}
 	ce := models.NewAzureCloudExport(models.CloudExportAzureRequiredFields{
-		Name:   "acc_test_terraform_azure_export",
-		PlanID: "7512",
+		Name:   fmt.Sprintf("%s-azure-export-item", getAccTestPrefix()),
+		PlanID: getKentikPlanIDAccTests(),
 		AzureProperties: models.AzurePropertiesRequiredFields{
 			Location:       "centralus",
-			ResourceGroup:  "traffic-generator",
-			StorageAccount: "dummy-sa",
-			SubscriptionID: "dummy-sid",
+			ResourceGroup:  fmt.Sprintf("%s-traffic-generator", getAccTestPrefix()),
+			StorageAccount: fmt.Sprintf("%s-sa", getAccTestPrefix()),
+			SubscriptionID: fmt.Sprintf("%s-sid", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeCustomerManaged
 	ce.Enabled = pointer.ToBool(true)
-	ce.Description = "terraform azure cloud export"
+	ce.Description = fmt.Sprintf("%s-description-azure", getAccTestPrefix())
 	ce.GetAzureProperties().SecurityPrincipalEnabled = pointer.ToBool(true)
 	ce.BGP = &models.BGPProperties{
 		ApplyBGP: pointer.ToBool(false),
@@ -462,27 +530,17 @@ func createTestAccCloudExportItemAzure() (*models.CloudExport, error) {
 	return ce, nil
 }
 
-func deleteTestAccCloudExportItem(ce *models.CloudExport) error {
-	_, accTest := os.LookupEnv("TF_ACC")
-	if !accTest {
-		return nil
-	}
-	ctx := context.Background()
-	client, err := newClient()
-	if err != nil {
-		return err
-	}
-	err = client.CloudExports.Delete(ctx, ce.ID)
-	if err != nil {
-		return fmt.Errorf("client.CloudExports.Delete: %w", err)
-	}
-	return nil
+func getKentikPlanIDAccTests() string {
+	planID, _ := os.LookupEnv("KENTIK_PLAN_ID")
+	return planID
 }
 
 func newClient() (*kentikapi.Client, error) {
 	authEmail, _ := os.LookupEnv("KTAPI_AUTH_EMAIL")
 	authToken, _ := os.LookupEnv("KTAPI_AUTH_TOKEN")
+	apiURL, _ := os.LookupEnv("KTAPI_URL")
 	client, err := kentikapi.NewClient(kentikapi.Config{
+		APIURL:      apiURL,
 		AuthEmail:   authEmail,
 		AuthToken:   authToken,
 		LogPayloads: false,
