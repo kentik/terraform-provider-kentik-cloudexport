@@ -10,6 +10,14 @@ import (
 
 // CloudExportSchema reflects CloudExport type and defines a Cloud Export item used in terraform .tf files
 // Note: currently, nesting an object is only possible by using single-item List element (Terraform limitation).
+
+const (
+	awsKey   = "aws"
+	azureKey = "azure"
+	gceKey   = "gce"
+	ibmKey   = "ibm"
+)
+
 func makeCloudExportSchema(mode schemaMode) map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
@@ -70,11 +78,11 @@ func makeCloudExportSchema(mode schemaMode) map[string]*schema.Schema {
 					models.CloudProviderIBM,
 				}, false))),
 		},
-		"aws":            makeAWSSchema(mode),
-		"azure":          makeAzureSchema(mode),
+		awsKey:           makeAWSSchema(mode),
+		azureKey:         makeAzureSchema(mode),
+		gceKey:           makeGCESchema(mode),
+		ibmKey:           makeIBMSchema(mode),
 		"bgp":            makeBGPSchema(mode),
-		"gce":            makeGCESchema(mode),
-		"ibm":            makeIBMSchema(mode),
 		"current_status": makeCurrentStatusSchema(),
 	}
 }
@@ -82,16 +90,11 @@ func makeCloudExportSchema(mode schemaMode) map[string]*schema.Schema {
 func makeAWSSchema(mode schemaMode) *schema.Schema {
 	return &schema.Schema{
 		// nested object
-		Type:        schema.TypeList,
-		Computed:    mode == readSingle || mode == readList, // provided by server on read
-		Optional:    mode == create,                         // optionally provided by user on create
-		Description: "Properties specific to Amazon Web Services \"vpc flow logs\" exports",
-		ExactlyOneOf: skipOnReadOneOf(mode, []string{
-			models.CloudProviderAWS,
-			models.CloudProviderAzure,
-			models.CloudProviderGCE,
-			models.CloudProviderIBM,
-		}),
+		Type:         schema.TypeList,
+		Computed:     mode == readSingle || mode == readList, // provided by server on read
+		Optional:     mode == create,                         // optionally provided by user on create
+		Description:  "Properties specific to Amazon Web Services \"vpc flow logs\" exports",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{awsKey, azureKey, gceKey, ibmKey}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"bucket": {
@@ -131,16 +134,11 @@ func makeAWSSchema(mode schemaMode) *schema.Schema {
 func makeAzureSchema(mode schemaMode) *schema.Schema {
 	return &schema.Schema{
 		// nested object
-		Type:        schema.TypeList,
-		Computed:    mode == readSingle || mode == readList, // provided by server on read
-		Optional:    mode == create,                         // optionally provided by user on create
-		Description: "Properties specific to Azure exports",
-		ExactlyOneOf: skipOnReadOneOf(mode, []string{
-			models.CloudProviderAWS,
-			models.CloudProviderAzure,
-			models.CloudProviderGCE,
-			models.CloudProviderIBM,
-		}),
+		Type:         schema.TypeList,
+		Computed:     mode == readSingle || mode == readList, // provided by server on read
+		Optional:     mode == create,                         // optionally provided by user on create
+		Description:  "Properties specific to Azure exports",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{awsKey, azureKey, gceKey, ibmKey}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"location": {
@@ -208,16 +206,11 @@ func makeBGPSchema(mode schemaMode) *schema.Schema {
 func makeGCESchema(mode schemaMode) *schema.Schema {
 	return &schema.Schema{
 		// nested object
-		Type:        schema.TypeList,
-		Computed:    mode == readSingle || mode == readList, // provided by server on read
-		Optional:    mode == create,                         // optionally provided by user on create
-		Description: "Properties specific to Google Cloud export",
-		ExactlyOneOf: skipOnReadOneOf(mode, []string{
-			models.CloudProviderAWS,
-			models.CloudProviderAzure,
-			models.CloudProviderGCE,
-			models.CloudProviderIBM,
-		}),
+		Type:         schema.TypeList,
+		Computed:     mode == readSingle || mode == readList, // provided by server on read
+		Optional:     mode == create,                         // optionally provided by user on create
+		Description:  "Properties specific to Google Cloud export",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{awsKey, azureKey, gceKey, ibmKey}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"project": {
@@ -238,16 +231,11 @@ func makeGCESchema(mode schemaMode) *schema.Schema {
 func makeIBMSchema(mode schemaMode) *schema.Schema {
 	return &schema.Schema{
 		// nested object
-		Type:        schema.TypeList,
-		Computed:    mode == readSingle || mode == readList, // provided by server on read
-		Optional:    mode == create,                         // optionally provided by user on create
-		Description: "Properties specific to IBM Cloud exports",
-		ExactlyOneOf: skipOnReadOneOf(mode, []string{
-			models.CloudProviderAWS,
-			models.CloudProviderAzure,
-			models.CloudProviderGCE,
-			models.CloudProviderIBM,
-		}),
+		Type:         schema.TypeList,
+		Computed:     mode == readSingle || mode == readList, // provided by server on read
+		Optional:     mode == create,                         // optionally provided by user on create
+		Description:  "Properties specific to IBM Cloud exports",
+		ExactlyOneOf: skipOnReadOneOf(mode, []string{awsKey, azureKey, gceKey, ibmKey}),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"bucket": {
