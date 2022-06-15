@@ -33,4 +33,7 @@ lint:
 test:
 	go test ./... -timeout=5m
 
+test_environment:
+	/bin/echo "test_dummy: ${TEST_DUMMY}, email: ${KTAPI_AUTH_EMAIL}"
+
 .PHONY: build check-docs docs fmt install lint test
