@@ -32,5 +32,8 @@ lint:
 
 test:
 	go test ./... -timeout=5m
+	
+acceptance:
+	/bin/echo "email: ${KTAPI_AUTH_EMAIL}, url: ${KTAPI_URL}"
 
 .PHONY: build check-docs docs fmt install lint test
