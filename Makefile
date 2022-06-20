@@ -33,4 +33,7 @@ lint:
 test:
 	go test ./... -timeout=5m
 
+acceptance:
+	$(info Not implemented)
+
 .PHONY: build check-docs docs fmt install lint test
