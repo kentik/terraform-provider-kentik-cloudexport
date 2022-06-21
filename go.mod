@@ -3,6 +3,7 @@ module github.com/kentik/terraform-provider-kentik-cloudexport
 go 1.17
 
 require (
+	github.com/AlekSi/pointer v1.2.0
 	github.com/hashicorp/terraform-plugin-docs v0.9.0
 	github.com/hashicorp/terraform-plugin-log v0.4.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
@@ -15,7 +16,6 @@ require (
 )
 
 require (
-	github.com/AlekSi/pointer v1.2.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect

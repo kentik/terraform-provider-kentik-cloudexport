@@ -1,9 +1,16 @@
 package provider_test
 
 import (
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kentik/terraform-provider-kentik-cloudexport/internal/provider"
 )
+
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
+}
 
 // providerFactories are used to instantiate a provider during acceptance testing.
 // The factory function will be invoked for every Terraform CLI command executed
