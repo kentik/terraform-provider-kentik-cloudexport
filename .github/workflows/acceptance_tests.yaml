@@ -1,9 +1,7 @@
 name: Acceptance Tests
 
 on:
-    schedule:
-      - cron:  "0 3 * * 2"
-    pull_request_target:
+    release:
       paths-ignore:
         - 'README.md'
         - 'docs/**'
