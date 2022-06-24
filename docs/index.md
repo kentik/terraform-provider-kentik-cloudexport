@@ -54,7 +54,7 @@ terraform destroy
 
 ### Optional
 
-- `apiurl` (String) Cloud Export API server URL (optional). Can also be specified with KTAPI_URL environment variable.
+- `apiurl` (String) Cloud Export API server URL (optional). Can also be specified with KTAPI_URL environment variable (eg. https://api.kentik.eu).
 - `log_payloads` (Boolean) Log payloads flag enables verbose debug logs of requests and responses (optional). Can also be specified with KTAPI_LOG_PAYLOADS environment variable.
 - `retry` (Block List, Max: 1) Configuration for API client retry mechanism (see [below for nested schema](#nestedblock--retry))
 

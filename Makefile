@@ -34,9 +34,8 @@ test:
 	go test ./... -timeout=5m
 
 acceptance:
-	export TF_ACC_PREFIX=$(date +%Y%m%d%H%M%S%N)
-	TF_ACC=1 go test ./... -timeout=5m
+	TF_ACC=1 TF_ACC_PREFIX=$(shell date '+%Y%m%d%H%M%S%N') go test ./... -timeout=5m
 	go test ./... -sweep -timeout=5m
-	unset TF_ACC_PREFIX
 
 .PHONY: build check-docs docs fmt install lint test
+
