@@ -48,7 +48,8 @@ func providerSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc("KTAPI_URL", nil),
-			Description: "Cloud Export API server URL (optional). Can also be specified with KTAPI_URL environment variable.",
+			Description: "Cloud Export API server URL (optional). Can also be specified with KTAPI_URL environment variable" +
+				" (eg. https://api.kentik.eu).",
 		},
 		emailKey: {
 			Type:        schema.TypeString,

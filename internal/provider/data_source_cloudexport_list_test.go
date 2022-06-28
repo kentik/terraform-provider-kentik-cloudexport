@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/kentik/community_sdk_golang/kentikapi/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -53,10 +54,28 @@ func makeTestCloudExportDataSourceList(apiURL string) string {
 	)
 }
 
+// TestAccDataSourceCloudExportList is an acceptance test.
+// Checks if kentik-cloudexport_list data source method returns a list of resources.
 func TestAccDataSourceCloudExportList(t *testing.T) {
 	if skipIfNotAcceptance() {
 		checkRequiredEnvVariables(t)
-		assert.NoError(t, createTestAccCloudExportList())
+
+		ctx := context.Background()
+		client, err := newClient()
+		assert.NoError(t, err)
+
+		ceAWS, err := client.CloudExports.Create(ctx, newAWSCloudExportListForAccTest())
+		require.NoError(t, err) // do not continue the test on assertion failure
+		ceGCE, err := client.CloudExports.Create(ctx, newGCECloudExportListForAccTest())
+		require.NoError(t, err) // do not continue the test on assertion failure
+
+		defer func() {
+			// Do not rely on sweepers, because they are only a "backup" mechanism
+			err = client.CloudExports.Delete(ctx, ceAWS.ID)
+			assert.NoError(t, err)
+			err = client.CloudExports.Delete(ctx, ceGCE.ID)
+			assert.NoError(t, err)
+		}()
 
 		resource.ParallelTest(t, resource.TestCase{
 			ProviderFactories: providerFactories(),
@@ -80,12 +99,7 @@ func makeTestAccCloudExportDataSourceList() string {
 	`
 }
 
-func createTestAccCloudExportList() error {
-	ctx := context.Background()
-	client, err := newClient()
-	if err != nil {
-		return err
-	}
+func newAWSCloudExportListForAccTest() *models.CloudExport {
 	ceAWS := models.NewAWSCloudExport(models.CloudExportAWSRequiredFields{
 		Name:   fmt.Sprintf("%s-aws-export-list", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
@@ -99,11 +113,10 @@ func createTestAccCloudExportList() error {
 	ceAWS.GetAWSProperties().Region = "us-east-2"
 	ceAWS.GetAWSProperties().DeleteAfterRead = pointer.ToBool(true)
 	ceAWS.GetAWSProperties().MultipleBuckets = pointer.ToBool(true)
-	_, err = client.CloudExports.Create(ctx, ceAWS)
-	if err != nil {
-		return fmt.Errorf("client.CloudExports.Create: %w", err)
-	}
+	return ceAWS
+}
 
+func newGCECloudExportListForAccTest() *models.CloudExport {
 	ceGCE := models.NewGCECloudExport(models.CloudExportGCERequiredFields{
 		Name:   fmt.Sprintf("%s-gce-export-list", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
@@ -114,10 +127,5 @@ func createTestAccCloudExportList() error {
 	})
 	ceGCE.Type = models.CloudExportTypeCustomerManaged
 	ceGCE.Description = fmt.Sprintf("%s-description", getAccTestPrefix())
-	_, err = client.CloudExports.Create(ctx, ceGCE)
-	if err != nil {
-		return fmt.Errorf("client.CloudExports.Create: %w", err)
-	}
-
-	return nil
+	return ceGCE
 }

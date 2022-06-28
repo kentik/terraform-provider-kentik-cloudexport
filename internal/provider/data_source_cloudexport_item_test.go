@@ -225,8 +225,19 @@ func makeTestCloudExportDataSourceItems(apiURL string) string {
 func TestAccDataSourceCloudExportItemAWS(t *testing.T) {
 	if skipIfNotAcceptance() {
 		checkRequiredEnvVariables(t)
-		ce, err := createTestAccCloudExportItemAWS()
+
+		ctx := context.Background()
+		client, err := newClient()
 		assert.NoError(t, err)
+
+		ce, err := client.CloudExports.Create(ctx, newAWSCloudExportForAccTest())
+		require.NoError(t, err) // do not continue the test on assertion failure
+
+		defer func() {
+			// Do not rely on sweepers, because they are only a "backup" mechanism
+			err = client.CloudExports.Delete(ctx, ce.ID)
+			assert.NoError(t, err)
+		}()
 
 		resource.ParallelTest(t, resource.TestCase{
 			ProviderFactories: providerFactories(),
@@ -252,7 +263,7 @@ func TestAccDataSourceCloudExportItemAWS(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							ceAWSDS,
 							"aws.0.bucket",
-							fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix())),
+							fmt.Sprintf("%s-tf-aws-bucket", getAccTestPrefix())),
 						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.iam_role_arn", fmt.Sprintf("%s-iam-role-arn", getAccTestPrefix())),
 						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.region", "us-east-2"),
 						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.delete_after_read", "true"),
@@ -267,8 +278,19 @@ func TestAccDataSourceCloudExportItemAWS(t *testing.T) {
 func TestAccDataSourceCloudExportItemGCE(t *testing.T) {
 	if skipIfNotAcceptance() {
 		checkRequiredEnvVariables(t)
-		ce, err := createTestAccCloudExportItemGCE()
+
+		ctx := context.Background()
+		client, err := newClient()
 		assert.NoError(t, err)
+
+		ce, err := client.CloudExports.Create(ctx, newGCECloudExportForAccTest())
+		require.NoError(t, err) // do not continue the test on assertion failure
+
+		defer func() {
+			// Do not rely on sweepers, because they are only a "backup" mechanism
+			err = client.CloudExports.Delete(ctx, ce.ID)
+			assert.NoError(t, err)
+		}()
 
 		resource.ParallelTest(t, resource.TestCase{
 			ProviderFactories: providerFactories(),
@@ -312,8 +334,19 @@ func TestAccDataSourceCloudExportItemGCE(t *testing.T) {
 func TestAccDataSourceCloudExportItemIBM(t *testing.T) {
 	if skipIfNotAcceptance() {
 		checkRequiredEnvVariables(t)
-		ce, err := createTestAccCloudExportItemIBM()
+
+		ctx := context.Background()
+		client, err := newClient()
 		assert.NoError(t, err)
+
+		ce, err := client.CloudExports.Create(ctx, newIBMCloudExportForAccTest())
+		require.NoError(t, err) // do not continue the test on assertion failure
+
+		defer func() {
+			// Do not rely on sweepers, because they are only a "backup" mechanism
+			err = client.CloudExports.Delete(ctx, ce.ID)
+			assert.NoError(t, err)
+		}()
 
 		resource.ParallelTest(t, resource.TestCase{
 			ProviderFactories: providerFactories(),
@@ -330,7 +363,7 @@ func TestAccDataSourceCloudExportItemIBM(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							ceIBMDS,
 							"ibm.0.bucket",
-							fmt.Sprintf("%s-terraform-ibm-bucket", getAccTestPrefix())),
+							fmt.Sprintf("%s-tf-ibm-bucket", getAccTestPrefix())),
 						resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.apply_bgp", "true"),
 						resource.TestCheckResourceAttr(
 							ceIBMDS,
@@ -350,8 +383,19 @@ func TestAccDataSourceCloudExportItemIBM(t *testing.T) {
 func TestAccDataSourceCloudExportItemAzure(t *testing.T) {
 	if skipIfNotAcceptance() {
 		checkRequiredEnvVariables(t)
-		ce, err := createTestAccCloudExportItemAzure()
+
+		ctx := context.Background()
+		client, err := newClient()
 		assert.NoError(t, err)
+
+		ce, err := client.CloudExports.Create(ctx, newAzureCloudExportForAccTest())
+		require.NoError(t, err) // do not continue the test on assertion failure
+
+		defer func() {
+			// Do not rely on sweepers, because they are only a "backup" mechanism
+			err = client.CloudExports.Delete(ctx, ce.ID)
+			assert.NoError(t, err)
+		}()
 
 		resource.ParallelTest(t, resource.TestCase{
 			ProviderFactories: providerFactories(),
@@ -387,7 +431,7 @@ func skipIfNotAcceptance() bool {
 }
 
 func getAccTestPrefix() string {
-	return fmt.Sprintf("kentik_tf_integ_test_%s", os.Getenv("TF_ACC_PREFIX"))
+	return fmt.Sprintf("kentik_tf_test_%s", os.Getenv("TF_ACC_PREFIX"))
 }
 
 func checkRequiredEnvVariables(t *testing.T) {
@@ -411,17 +455,12 @@ func makeTestAccCloudExportDataSourceItems(provider string, ce *models.CloudExpo
 	)
 }
 
-func createTestAccCloudExportItemAWS() (*models.CloudExport, error) {
-	ctx := context.Background()
-	client, err := newClient()
-	if err != nil {
-		return nil, err
-	}
+func newAWSCloudExportForAccTest() *models.CloudExport {
 	ce := models.NewAWSCloudExport(models.CloudExportAWSRequiredFields{
 		Name:   fmt.Sprintf("%s-aws-export-item", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
 		AWSProperties: models.AWSPropertiesRequiredFields{
-			Bucket: fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix()),
+			Bucket: fmt.Sprintf("%s-tf-aws-bucket", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeKentikManaged
@@ -436,19 +475,10 @@ func createTestAccCloudExportItemAWS() (*models.CloudExport, error) {
 		UseBGPDeviceID: fmt.Sprintf("%s-device-id", getAccTestPrefix()),
 		DeviceBGPType:  fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix()),
 	}
-	ce, err = client.CloudExports.Create(ctx, ce)
-	if err != nil {
-		return nil, fmt.Errorf("client.CloudExports.Create: %w", err)
-	}
-	return ce, nil
+	return ce
 }
 
-func createTestAccCloudExportItemGCE() (*models.CloudExport, error) {
-	ctx := context.Background()
-	client, err := newClient()
-	if err != nil {
-		return nil, err
-	}
+func newGCECloudExportForAccTest() *models.CloudExport {
 	ce := models.NewGCECloudExport(models.CloudExportGCERequiredFields{
 		Name:   fmt.Sprintf("%s-gce-export-item", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
@@ -465,24 +495,15 @@ func createTestAccCloudExportItemGCE() (*models.CloudExport, error) {
 		UseBGPDeviceID: fmt.Sprintf("%s-device-id", getAccTestPrefix()),
 		DeviceBGPType:  fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix()),
 	}
-	ce, err = client.CloudExports.Create(ctx, ce)
-	if err != nil {
-		return nil, fmt.Errorf("client.CloudExports.Create: %w", err)
-	}
-	return ce, nil
+	return ce
 }
 
-func createTestAccCloudExportItemIBM() (*models.CloudExport, error) {
-	ctx := context.Background()
-	client, err := newClient()
-	if err != nil {
-		return nil, err
-	}
+func newIBMCloudExportForAccTest() *models.CloudExport {
 	ce := models.NewIBMCloudExport(models.CloudExportIBMRequiredFields{
 		Name:   fmt.Sprintf("%s-ibm-export-item", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
 		IBMProperties: models.IBMPropertiesRequiredFields{
-			Bucket: fmt.Sprintf("%s-terraform-ibm-bucket", getAccTestPrefix()),
+			Bucket: fmt.Sprintf("%s-tf-ibm-bucket", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeKentikManaged
@@ -493,19 +514,10 @@ func createTestAccCloudExportItemIBM() (*models.CloudExport, error) {
 		UseBGPDeviceID: fmt.Sprintf("%s-device-id", getAccTestPrefix()),
 		DeviceBGPType:  fmt.Sprintf("%s-device-bgp-type", getAccTestPrefix()),
 	}
-	ce, err = client.CloudExports.Create(ctx, ce)
-	if err != nil {
-		return nil, fmt.Errorf("client.CloudExports.Create: %w", err)
-	}
-	return ce, nil
+	return ce
 }
 
-func createTestAccCloudExportItemAzure() (*models.CloudExport, error) {
-	ctx := context.Background()
-	client, err := newClient()
-	if err != nil {
-		return nil, err
-	}
+func newAzureCloudExportForAccTest() *models.CloudExport {
 	ce := models.NewAzureCloudExport(models.CloudExportAzureRequiredFields{
 		Name:   fmt.Sprintf("%s-azure-export-item", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
@@ -523,11 +535,7 @@ func createTestAccCloudExportItemAzure() (*models.CloudExport, error) {
 	ce.BGP = &models.BGPProperties{
 		ApplyBGP: pointer.ToBool(false),
 	}
-	ce, err = client.CloudExports.Create(ctx, ce)
-	if err != nil {
-		return nil, fmt.Errorf("client.CloudExports.Create: %w", err)
-	}
-	return ce, nil
+	return ce
 }
 
 func getKentikPlanIDAccTests() string {
