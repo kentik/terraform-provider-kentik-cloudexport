@@ -54,6 +54,8 @@ func makeTestCloudExportDataSourceList(apiURL string) string {
 	)
 }
 
+// TestAccDataSourceCloudExportList is an acceptance test.
+// Checks if kentik-cloudexport_list data source method returns a list of resources.
 func TestAccDataSourceCloudExportList(t *testing.T) {
 	if skipIfNotAcceptance() {
 		checkRequiredEnvVariables(t)

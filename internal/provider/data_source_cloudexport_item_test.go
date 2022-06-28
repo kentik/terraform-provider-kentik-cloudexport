@@ -263,7 +263,7 @@ func TestAccDataSourceCloudExportItemAWS(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							ceAWSDS,
 							"aws.0.bucket",
-							fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix())),
+							fmt.Sprintf("%s-tf-aws-bucket", getAccTestPrefix())),
 						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.iam_role_arn", fmt.Sprintf("%s-iam-role-arn", getAccTestPrefix())),
 						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.region", "us-east-2"),
 						resource.TestCheckResourceAttr(ceAWSDS, "aws.0.delete_after_read", "true"),
@@ -363,7 +363,7 @@ func TestAccDataSourceCloudExportItemIBM(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							ceIBMDS,
 							"ibm.0.bucket",
-							fmt.Sprintf("%s-terraform-ibm-bucket", getAccTestPrefix())),
+							fmt.Sprintf("%s-tf-ibm-bucket", getAccTestPrefix())),
 						resource.TestCheckResourceAttr(ceIBMDS, "bgp.0.apply_bgp", "true"),
 						resource.TestCheckResourceAttr(
 							ceIBMDS,
@@ -460,7 +460,7 @@ func newAWSCloudExportForAccTest() *models.CloudExport {
 		Name:   fmt.Sprintf("%s-aws-export-item", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
 		AWSProperties: models.AWSPropertiesRequiredFields{
-			Bucket: fmt.Sprintf("%s-terraform-aws-bucket", getAccTestPrefix()),
+			Bucket: fmt.Sprintf("%s-tf-aws-bucket", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeKentikManaged
@@ -503,7 +503,7 @@ func newIBMCloudExportForAccTest() *models.CloudExport {
 		Name:   fmt.Sprintf("%s-ibm-export-item", getAccTestPrefix()),
 		PlanID: getKentikPlanIDAccTests(),
 		IBMProperties: models.IBMPropertiesRequiredFields{
-			Bucket: fmt.Sprintf("%s-terraform-ibm-bucket", getAccTestPrefix()),
+			Bucket: fmt.Sprintf("%s-tf-ibm-bucket", getAccTestPrefix()),
 		},
 	})
 	ce.Type = models.CloudExportTypeKentikManaged

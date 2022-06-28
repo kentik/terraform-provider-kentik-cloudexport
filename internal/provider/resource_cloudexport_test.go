@@ -628,7 +628,7 @@ func TestAccResourceCloudExportIBM(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							ceIBMResource,
 							"ibm.0.bucket",
-							fmt.Sprintf("%s-ibm-bucket-updated", getAccTestPrefix())),
+							fmt.Sprintf("%s-ibm-bucket-up", getAccTestPrefix())),
 					),
 				},
 			},
@@ -814,7 +814,7 @@ func makeTestAccResourceCloudExportUpdateIBM() string {
 			plan_id= %[2]s
 			cloud_provider= "ibm"
 			ibm {
-				bucket= "%[1]s-ibm-bucket-updated"
+				bucket= "%[1]s-ibm-bucket-up"
 			}
 		  }
 		`, getAccTestPrefix(), getKentikPlanIDAccTests())
