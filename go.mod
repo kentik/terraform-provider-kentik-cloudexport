@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/hashicorp/terraform-plugin-docs v0.10.1
-	github.com/hashicorp/terraform-plugin-log v0.4.1
+	github.com/hashicorp/terraform-plugin-log v0.6.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
 	github.com/kentik/api-schema-public v0.0.0-20220322181339-896729e59945
 	github.com/kentik/community_sdk_golang v0.2.1-0.20220407113303-5f9f1d75a145
