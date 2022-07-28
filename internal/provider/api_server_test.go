@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -47,7 +48,9 @@ func (s *testAPIServer) Start() {
 
 	go func() {
 		err = s.server.Serve(l)
-		assert.NoError(s.t, err)
+		if !errors.Is(err, grpc.ErrServerStopped) {
+			assert.NoError(s.t, err)
+		}
 		s.done <- struct{}{}
 	}()
 }
