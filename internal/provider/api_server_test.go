@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"testing"
 
-	cloudexportpb "github.com/kentik/api-schema-public/gen/go/kentik/cloud_export/v202101beta1"
+	cloudexportpb "github.com/kentik/api-schema-public/gen/go/kentik/cloud_export/v202506"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
