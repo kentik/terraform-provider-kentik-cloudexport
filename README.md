@@ -66,3 +66,4 @@ To release the provider:
 1. Make sure that all code that you want to release is in _master_ branch.
 2. Navigate to [repository releases page](https://github.com/kentik/terraform-provider-kentik-cloudexport/releases), click _Draft a new release_ button and put tag version (in _v\[0-9].\[0-9].\[0-9]_ format), name and description.
 3. Go to [GitHub Actions](https://github.com/kentik/terraform-provider-kentik-cloudexport/actions) to observe the release job.
+4. test
