@@ -8,7 +8,7 @@ OS_ARCH := $(shell printf "%s_%s" `go env GOHOSTOS` `go env GOHOSTARCH`)
 default: install
 
 build:
-	go mod tidy -compat=1.18
+	go mod tidy
 	go build -o ${BINARY}
 
 check-docs:
