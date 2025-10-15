@@ -1,6 +1,6 @@
 module github.com/kentik/terraform-provider-kentik-cloudexport
 
-go 1.17
+go 1.18
 
 require (
 	github.com/AlekSi/pointer v1.2.0
