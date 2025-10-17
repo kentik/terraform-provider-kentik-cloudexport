@@ -98,8 +98,8 @@ check_env() {
 }
 
 list_cloud_exports() {
-    read -r -p "Press any key to list Cloud Exports with cURL on https://cloudexports.api.kentik.com/cloud_export/v202101beta1/exports"
-    curl --location --request GET --max-time 30 "https://cloudexports.api.kentik.com/cloud_export/v202101beta1/exports" \
+    read -r -p "Press any key to list Cloud Exports with cURL on https://cloudexports.api.kentik.com/cloud_export/v202506/exports"
+    curl --location --request GET --max-time 30 "https://cloudexports.api.kentik.com/cloud_export/v202506/exports" \
         --header "X-CH-Auth-Email: $KTAPI_AUTH_EMAIL" \
         --header "X-CH-Auth-API-Token: $KTAPI_AUTH_TOKEN" | jq
     pause
